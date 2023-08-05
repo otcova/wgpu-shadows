@@ -1,6 +1,6 @@
-use image::{DynamicImage, EncodableLayout};
+use image::{DynamicImage, EncodableLayout, ImageBuffer, Rgba};
 use indoc::*;
-use std::{ffi::OsStr, fs};
+use std::{ffi::OsStr, fs, hash::Hash};
 
 use texture_packer::{
     exporter::ImageExporter, importer::ImageImporter, texture::Texture, MultiTexturePacker,
@@ -18,7 +18,10 @@ const ATLAS_CONFIG: TexturePackerConfig = TexturePackerConfig {
     trim: true,
 };
 
-fn pack_images<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, String>) {
+fn pack_images<'a>(
+    diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, String>,
+    normal_pack: &mut MultiTexturePacker<'a, DynamicImage, String>,
+) {
     for entry in fs::read_dir("assets").unwrap() {
         let Ok(entry) = entry else {
             continue;
@@ -30,35 +33,63 @@ fn pack_images<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Strin
             continue;
         }
 
-        let path = entry.path();
-
+        let mut path = entry.path();
         if path.extension() != Some(OsStr::new("webp")) {
             continue;
         }
 
         let name = path.file_stem().unwrap().to_str().unwrap().to_string();
+        if name.ends_with("_norm") {
+            continue;
+        }
+
         let image = ImageImporter::import_from_file(&path).unwrap();
+
+        path.set_file_name(format!("{name}_norm.webp"));
+        let norm_image = match ImageImporter::import_from_file(&path) {
+            Ok(norm_image) => norm_image,
+            // Create a normal default normal image
+            Err(_) => DynamicImage::ImageRgba8(
+                ImageBuffer::from_vec(
+                    image.width(),
+                    image.height(),
+                    image
+                        .as_rgba8()
+                        .unwrap()
+                        .as_raw()
+                        .chunks_exact(4)
+                        .flat_map(|data| [128, 128, 255, data[3]])
+                        .collect::<Vec<u8>>(),
+                )
+                .unwrap(),
+            ),
+        };
+        normal_pack.pack_own(name.clone(), norm_image).unwrap();
+
         diffuse_pack.pack_own(name, image).unwrap();
     }
 }
 
-fn export_textures<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, String>) {
+fn export_textures<'a>(
+    name: &str,
+    diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, String>,
+) {
     for (i, page) in diffuse_pack.get_pages().iter().enumerate() {
         let exporter = ImageExporter::export(page).unwrap();
 
         let encoder = webp::Encoder::from_image(&exporter).unwrap();
         let encoded_webp: webp::WebPMemory = encoder.encode_lossless();
 
-        let path = format!("atlas/diffuse-{}.webp", i);
+        let path = format!("atlas/{}-{}.webp", name, i);
         fs::write(path, encoded_webp.as_bytes()).unwrap();
     }
 }
 
 fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, String>) {
-    let pages_count = diffuse_pack.get_pages().len();
+    let pages_count = diffuse_pack.get_pages().len() * 2;
 
-    let mut texture_views = String::with_capacity(128 * pages_count);
-    let mut load_textures = String::with_capacity(64 * pages_count);
+    let mut texture_views = String::with_capacity(64 * pages_count);
+    let mut load_textures = String::with_capacity(32 * pages_count);
 
     for (page_i, page) in diffuse_pack.get_pages().iter().enumerate() {
         let page_w = page.width() as f32;
@@ -88,6 +119,12 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
             {indent}    queue,
             {indent}    include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/atlas/diffuse-{page_i}.webp")),
             {indent}    "Diffuse Texture {page_i}",
+            {indent})?,
+            {indent}Texture::from_bytes(
+            {indent}    device,
+            {indent}    queue,
+            {indent}    include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/atlas/normal-{page_i}.webp")),
+            {indent}    "Normal Texture {page_i}",
             {indent})?,
             "#,
             indent = "                ",
@@ -131,11 +168,13 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
 }
 
 fn main() {
-    let mut pack = MultiTexturePacker::new_skyline(ATLAS_CONFIG);
+    let mut diffuse = MultiTexturePacker::new_skyline(ATLAS_CONFIG);
+    let mut normal = MultiTexturePacker::new_skyline(ATLAS_CONFIG);
 
-    pack_images(&mut pack);
-    export_textures(&mut pack);
-    generate_code(&mut pack);
+    pack_images(&mut diffuse, &mut normal);
+    export_textures("diffuse", &mut diffuse);
+    export_textures("normal", &mut normal);
+    generate_code(&mut diffuse);
 
-    println!("cargo:rerun-if-changed=assets");
+    println!("cargo:rerun-if-changed=assets,atlas");
 }

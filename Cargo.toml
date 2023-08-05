@@ -4,15 +4,52 @@ version = "0.1.0"
 edition = "2021"
 resolver = "2"
 
-# [lib]
-# crate-type = ["cdylib", "rlib"]
+##########################
+### Build Dependencies ###
+##########################
+
+[build-dependencies]
+indoc = "2"
+webp = "0.2"
+
+[build-dependencies.image]
+version = "0.24"
+features = ["webp"]
+default-features = false
+
+[build-dependencies.texture_packer]
+version = "0.25"
+features = ["webp"]
+default-features = false
+
+
+####################
+### Dependencies ###
+####################
 
 [dependencies]
 env_logger = "0.10.0"
 log = "0.4.19"
-tokio = { version="1.29.1", features=["rt-multi-thread", "macros"] }
-wgpu = "0.17.0"
+wgpu = "0.16"
 winit = "0.28.6"
+smaa = "0.10"
+
+[dependencies.tokio]
+version="1.29.1"
+features=["rt-multi-thread", "macros"]
+
+[dependencies.bytemuck]
+version = "1.13"
+features = ["derive"]
+
+[dependencies.image]
+version = "0.24"
+default-features = false
+features = ["webp"]
+
+################
+### Profiles ###
+################
 
 [profile.release]
 opt-level = "s"
