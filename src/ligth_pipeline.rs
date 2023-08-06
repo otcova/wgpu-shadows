@@ -36,8 +36,7 @@ impl<'a> LigthFrame<'a> {
                 .begin_render_pass(&wgpu::RenderPassDescriptor {
                     label: Some("Quad render pass"),
                     color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                        view: &self.output_view,
-                        // view: &self.ligth_pipeline.textures.diffuse,
+                        view: &self.ligth_pipeline.textures.diffuse,
                         resolve_target: None,
                         ops: wgpu::Operations {
                             load: wgpu::LoadOp::Clear(wgpu::Color {
@@ -111,7 +110,7 @@ impl Encoders {
 
     fn finish(self, queue: &wgpu::Queue) {
         queue.submit([self.diffuse.finish(), self.normal.finish()]);
-        // queue.submit([self.ligth.finish()]);
+        queue.submit([self.ligth.finish()]);
     }
 }
 
@@ -160,7 +159,6 @@ impl LigthPipeline {
         self.textures = LigthTextures::new(device, width, height);
     }
 
-    /// Start rendering a frame. Dropping or calling resolve() the returned object will resolve the scene into the provided output_view.
     pub fn start_frame<'a>(
         &'a mut self,
         device: &'a wgpu::Device,

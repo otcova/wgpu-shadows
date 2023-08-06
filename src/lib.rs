@@ -180,8 +180,8 @@ impl State {
             self.quad_shader.bind(&mut ligth_pass);
             self.quad_batch.draw(&mut ligth_pass);
 
-            // self.ligth_shader.bind(&mut ligth_pass);
-            // self.ligth_batch.draw(&mut ligth_pass);
+            self.ligth_shader.bind(&mut ligth_pass);
+            self.ligth_batch.draw(&mut ligth_pass);
         }
 
         ligth_frame.resolve();
