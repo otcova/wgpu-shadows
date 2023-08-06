@@ -31,22 +31,24 @@ var normal_tex: texture_2d<f32>;
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
-    let origin = vec2<f32>();
+    let ligth_pos = vec3(0.5, 0.5, 0.2);
+    let ligth_color = vec3(1.9, 1., 1.);
+    let ligth_brigthness = 5.;
     
     let color = textureSample(color_tex, tex_sampler, in.tex_coords);
-    let normal = textureSample(normal_tex, tex_sampler, in.tex_coords);// * 2. - 1.;
-    
-    //let color = trunc(normal_color);
-    //normal_color = (normal_color - color);
-    
-    // let dist_vec = in.tex_coords - origin;
-    // let sq_dist = dot(dist_vec, dist_vec);
-    // let dist = sqrt(sq_dist);
-    
-    // let falloff = vec3(0.75, 3., 20.);
-    // let attenuation = 1. / (falloff * vec3(1., dist, sq_dist));
+    let normal_color = textureSample(normal_tex, tex_sampler, in.tex_coords).rgb;
+  
+    let dist_vec = ligth_pos - vec3(in.tex_coords, 0.);
+    let sq_dist = dot(dist_vec, dist_vec);
+    let dist = sqrt(sq_dist);
 
-    // return vec4(1., 0., 0., 1.);
-    return color;
+    let normal = normalize(normal_color * 2. - 1.);
+    let angle_attenuation = max(0., dot(dist_vec / dist, normal));
+    
+    let falloff = vec3(0.75, 3., 20.);
+    let dist_attenuation = 1. / (falloff.x + falloff.y * dist + falloff.z * sq_dist);
+
+    let final_color = color.rgb * angle_attenuation * dist_attenuation * ligth_color * ligth_brigthness;
+    return vec4(final_color, color.a);
 }
  

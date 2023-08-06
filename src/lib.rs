@@ -82,7 +82,7 @@ impl State {
         let surface_format = *surface_caps
             .formats
             .iter()
-            .find(|f| f.is_srgb())
+            .find(|f| !f.is_srgb())
             .ok_or("Could not get an srgb surface")?;
 
         let config = wgpu::SurfaceConfiguration {
