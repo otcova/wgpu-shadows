@@ -53,11 +53,13 @@ features = ["webp"]
 
 [profile.release]
 opt-level = "s"
-lto = "thin"
-# overflow-checks = false
+lto = true
+codegen-units = 1
+incremental = true
 
 [profile.dev]
-opt-level = 1
+opt-level = 0
 
 [profile.dev.package."*"]
 opt-level = "s"
+

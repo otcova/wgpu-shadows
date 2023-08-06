@@ -1,6 +1,6 @@
-use image::{DynamicImage, EncodableLayout, ImageBuffer, Rgba};
+use image::{DynamicImage, EncodableLayout, ImageBuffer};
 use indoc::*;
-use std::{ffi::OsStr, fs, hash::Hash};
+use std::{ffi::OsStr, fs};
 
 use texture_packer::{
     exporter::ImageExporter, importer::ImageImporter, texture::Texture, MultiTexturePacker,
