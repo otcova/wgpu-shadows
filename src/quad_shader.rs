@@ -50,8 +50,9 @@ impl QuadShader {
             ShaderDescriptor {
                 src: include_str!("normal_shader.wgsl").into(),
                 textures: &[&atlas.normal_textures[0].view],
+                uniforms: &[],
                 vertex_layout: QuadInstance::desc(),
-                output_format: wgpu::TextureFormat::Rgba8Unorm,
+                output_format: wgpu::TextureFormat::Rgb10a2Unorm,
                 blend: wgpu::BlendState::ALPHA_BLENDING,
                 depth_stencil: None,
             },
@@ -62,6 +63,7 @@ impl QuadShader {
             ShaderDescriptor {
                 src: include_str!("diffuse_shader.wgsl").into(),
                 textures: &[&ligth_textures.ligth, &atlas.diffuse_textures[0].view],
+                uniforms: &[],
                 vertex_layout: QuadInstance::desc(),
                 output_format: wgpu::TextureFormat::Bgra8Unorm,
                 blend: wgpu::BlendState::ALPHA_BLENDING,

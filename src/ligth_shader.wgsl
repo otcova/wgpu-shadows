@@ -1,3 +1,11 @@
+struct LigthUniform {
+    pos: vec3<f32>,
+    index: u32,    
+    color: vec3<f32>,
+}
+
+@group(1) @binding(0)
+var<uniform> ligth: LigthUniform;
 
 struct VertexInput {
     @builtin(vertex_index) vertex_index: u32,
@@ -18,13 +26,9 @@ fn quad_mesh(i: u32) -> vec2<f32> {
 
 @vertex
 fn vs_main(model: VertexInput) -> VertexOutput {
-    let camera_pos = vec2(0.);
-    let z_offset = 0.;
-    let ligth_index = 2u;
-    
     var out: VertexOutput;
 
-    if model.instance_index == ligth_index {
+    if model.instance_index == ligth.index {
         out.ligth = 1.;
         out.pos = quad_mesh(model.vertex_index) - 1.;
     } else  {
@@ -33,11 +37,11 @@ fn vs_main(model: VertexInput) -> VertexOutput {
         out.pos = select(model.a, model.b, vec2<bool>((model.vertex_index & 1u) == 0u));
         
         if (model.vertex_index & 2u) != 0u {
-            out.pos += (out.pos - camera_pos) * shadow_size;
+            out.pos += (out.pos - ligth.pos.xy) * shadow_size;
         }
     }
     
-    out.clip_pos = vec4<f32>(out.pos, z_offset, 1.);
+    out.clip_pos = vec4<f32>(out.pos, ligth.pos.z, 1.);
     return out;
 }
 
@@ -52,9 +56,8 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let normal_color = textureSample(normal_tex, tex_sampler, in.pos * vec2(0.5, -0.5) + 0.5).rgb;
         
     if in.ligth > 0. {
-         let ligth_pos = vec3(0., 0., 0.2);
-         let ligth_color = vec3(1., 1., 1.);
-         let ligth_brigthness = 10.;
+         let ligth_pos = vec3(ligth.pos.xy, 0.2);
+         let ligth_color = ligth.color;
 
          let dist_vec = ligth_pos - vec3(in.pos, 0.);
          let sq_dist = dot(dist_vec, dist_vec);
@@ -66,8 +69,8 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
          let falloff = vec3(0.75, 3., 20.);
          let dist_attenuation = 1. / (falloff.x + falloff.y * dist + falloff.z * sq_dist);
 
-         let final_color = angle_attenuation * dist_attenuation * ligth_color * ligth_brigthness;
-         return vec4(final_color, 1.);
+         let final_color = angle_attenuation * dist_attenuation * ligth_color;
+         return vec4(final_color / 4., 1.);
     }
     return vec4(0.);
 }

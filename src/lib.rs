@@ -9,6 +9,7 @@ mod quad_shader;
 mod shader;
 mod texture;
 mod texture_atlas;
+mod uniform;
 
 use error::*;
 use ligth_batch::LigthBatch;
@@ -184,7 +185,7 @@ impl State {
             self.quad_batch.draw(&mut ligth_pass);
 
             self.ligth_shader.bind(&mut ligth_pass);
-            self.ligth_batch.draw(&mut ligth_pass);
+            self.ligth_batch.draw(&mut ligth_pass, &self.queue);
         }
 
         ligth_frame.resolve();

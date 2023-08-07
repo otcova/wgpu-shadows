@@ -1,10 +1,14 @@
 use super::ligth_shader::LigthInstance;
 use crate::ligth_pipeline::LigthRenderPass;
+use crate::ligth_shader::LigthUniform;
+use crate::uniform::*;
 use wgpu::util::DeviceExt;
 
 pub struct LigthBatch {
-    vertices_buffer: wgpu::Buffer,
+    ligth_uniforms: Vec<Uniform>,
+    shadows_buffer: wgpu::Buffer,
     num_instances: u32,
+    t: f32,
 }
 
 const INSTANCES: &[LigthInstance] = &[
@@ -25,21 +29,62 @@ const INSTANCES: &[LigthInstance] = &[
 impl LigthBatch {
     pub fn new(device: &wgpu::Device) -> Self {
         let num_instances = INSTANCES.len() as u32;
-        let vertices_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        let shadows_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Ligth Instances Buffer"),
             contents: bytemuck::cast_slice(INSTANCES),
             usage: wgpu::BufferUsages::VERTEX,
         });
 
+        let ligth_uniforms = vec![
+            Uniform::new(
+                device,
+                wgpu::ShaderStages::VERTEX_FRAGMENT,
+                &LigthUniform {
+                    pos: [0., 0., 0.9],
+                    ligth_index: 2,
+                    ligth_color: [10., 10., 10.],
+                    _align: 0,
+                },
+            ),
+            Uniform::new(
+                device,
+                wgpu::ShaderStages::VERTEX_FRAGMENT,
+                &LigthUniform {
+                    pos: [0.5, 0., 0.5],
+                    ligth_index: 2,
+                    ligth_color: [15., 10., 10.],
+                    _align: 0,
+                },
+            ),
+        ];
+
         Self {
-            vertices_buffer,
+            ligth_uniforms,
+            shadows_buffer,
             num_instances,
+            t: 0.,
         }
     }
 
-    pub fn draw<'a>(&'a self, pass: &mut LigthRenderPass<'a>) {
-        let buffer = self.vertices_buffer.slice(..);
+    pub fn draw<'a>(&'a mut self, pass: &mut LigthRenderPass<'a>, queue: &wgpu::Queue) {
+        self.t += 0.02;
+
+        self.ligth_uniforms[1].update_buffer(
+            queue,
+            &LigthUniform {
+                pos: [f32::sin(self.t), f32::cos(self.t), 0.5],
+                ligth_index: 2,
+                ligth_color: [15., 10., 10.],
+                _align: 0,
+            },
+        );
+
+        let buffer = self.shadows_buffer.slice(..);
         pass.ligth.set_vertex_buffer(0, buffer);
-        pass.ligth.draw(0..4, 0..self.num_instances);
+
+        for uniform in self.ligth_uniforms.iter() {
+            uniform.bind(1, &mut pass.ligth);
+            pass.ligth.draw(0..4, 0..self.num_instances);
+        }
     }
 }

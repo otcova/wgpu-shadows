@@ -1,5 +1,6 @@
 use crate::ligth_pipeline::{LigthRenderPass, LigthTextures};
 use crate::shader::*;
+use crate::uniform::*;
 
 pub struct LigthShader {
     shader: Shader,
@@ -27,6 +28,15 @@ impl LigthInstance {
     }
 }
 
+#[repr(C)]
+#[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
+pub struct LigthUniform {
+    pub pos: [f32; 3],
+    pub ligth_index: u32,
+    pub ligth_color: [f32; 3],
+    pub _align: u32,
+}
+
 impl LigthShader {
     pub fn new(device: &wgpu::Device, textures: &LigthTextures) -> Self {
         let shader = Shader::new(
@@ -34,8 +44,12 @@ impl LigthShader {
             ShaderDescriptor {
                 src: include_str!("ligth_shader.wgsl").into(),
                 textures: &[&textures.normal],
+                uniforms: &[&Uniform::new_layout(
+                    device,
+                    wgpu::ShaderStages::VERTEX_FRAGMENT,
+                )],
                 vertex_layout: LigthInstance::desc(),
-                output_format: wgpu::TextureFormat::Rgba8Unorm,
+                output_format: wgpu::TextureFormat::Rgb10a2Unorm,
                 blend: wgpu::BlendState {
                     color: wgpu::BlendComponent {
                         src_factor: wgpu::BlendFactor::One,

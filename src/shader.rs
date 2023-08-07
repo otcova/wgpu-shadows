@@ -11,6 +11,7 @@ pub struct Shader {
 pub struct ShaderDescriptor<'a> {
     pub src: Cow<'a, str>,
     pub textures: &'a [&'a wgpu::TextureView],
+    pub uniforms: &'a [&'a wgpu::BindGroupLayout],
     pub vertex_layout: wgpu::VertexBufferLayout<'a>,
     pub output_format: wgpu::TextureFormat,
     pub blend: wgpu::BlendState,
@@ -49,14 +50,18 @@ impl Shader {
         }
 
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("Texture bind group layout"),
             entries: &entries,
-            label: None,
         });
+
+        let mut bind_group_layouts = Vec::with_capacity(1 + desc.uniforms.len());
+        bind_group_layouts.push(&bind_group_layout);
+        bind_group_layouts.extend_from_slice(desc.uniforms);
 
         let render_pipeline_layout =
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: None,
-                bind_group_layouts: &[&bind_group_layout],
+                bind_group_layouts: &bind_group_layouts,
                 push_constant_ranges: &[],
             });
 
@@ -127,9 +132,9 @@ impl Shader {
         }
 
         device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("Texture bind group"),
             layout,
             entries: &entries,
-            label: None,
         })
     }
 

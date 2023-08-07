@@ -43,10 +43,10 @@ impl TextureAtlas {
             tex_size: [0.074395254f32, 0.15625f32],
         }
     }
-    pub fn view_bow_charge_1() -> TextureAtlasView {
+    pub fn view_bow() -> TextureAtlasView {
         TextureAtlasView {
-            tex_pos: [0.35006845f32, 0f32],
-            tex_size: [0.18210863f32, 0.14648438f32],
+            tex_pos: [0.07485167f32, 0f32],
+            tex_size: [0.1232314f32, 0.3359375f32],
         }
     }
     pub fn view_bow_charge_0() -> TextureAtlasView {
@@ -61,10 +61,10 @@ impl TextureAtlas {
             tex_size: [0.4673665f32, 1f32],
         }
     }
-    pub fn view_bow() -> TextureAtlasView {
+    pub fn view_bow_charge_1() -> TextureAtlasView {
         TextureAtlasView {
-            tex_pos: [0.07485167f32, 0f32],
-            tex_size: [0.1232314f32, 0.3359375f32],
+            tex_pos: [0.35006845f32, 0f32],
+            tex_size: [0.18210863f32, 0.14648438f32],
         }
     }
 }
