@@ -1,4 +1,4 @@
-use crate::ligth_pipeline::LigthRenderPass;
+use crate::{ligth_pipeline::LigthRenderPass, texture_atlas::TextureAtlas};
 
 use super::quad_shader::QuadInstance;
 use wgpu::util::DeviceExt;
@@ -8,29 +8,36 @@ pub struct QuadBatch {
     num_instances: u32,
 }
 
-const INSTANCES: &[QuadInstance] = &[
-    QuadInstance {
-        pos: [0.0, 0.5],
-        size: [1., 1.],
-        angle: 0.,
-        tex_pos: [0., 0.],
-        tex_size: [1., 1.],
-    },
-    QuadInstance {
-        pos: [0.0, -0.5],
-        size: [0.5, 0.5],
-        angle: 0.2,
-        tex_pos: [0., 0.],
-        tex_size: [0.1, 0.1],
-    },
-];
-
 impl QuadBatch {
     pub fn new(device: &wgpu::Device) -> Self {
-        let num_instances = INSTANCES.len() as u32;
+        let instances: &[QuadInstance] = &[
+            QuadInstance {
+                pos: [0., 0.],
+                size: [2., 2.],
+                angle: 0.,
+                tex_pos: TextureAtlas::view_triangles().tex_pos,
+                tex_size: TextureAtlas::view_triangles().tex_size,
+            },
+            QuadInstance {
+                pos: [0.0, 0.5],
+                size: [1., 1.],
+                angle: 0.,
+                tex_pos: TextureAtlas::view_arrow().tex_pos,
+                tex_size: TextureAtlas::view_arrow().tex_size,
+            },
+            QuadInstance {
+                pos: [0.0, -0.5],
+                size: [0.5, 0.5],
+                angle: 0.2,
+                tex_pos: [0., 0.],
+                tex_size: [0.1, 0.1],
+            },
+        ];
+
+        let num_instances = instances.len() as u32;
         let instances_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Vertex Buffer"),
-            contents: bytemuck::cast_slice(INSTANCES),
+            label: Some("Quad Vertex Buffer"),
+            contents: bytemuck::cast_slice(instances),
             usage: wgpu::BufferUsages::VERTEX,
         });
 

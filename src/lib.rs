@@ -6,6 +6,7 @@ mod ligth_pipeline;
 mod ligth_shader;
 mod quad_batch;
 mod quad_shader;
+mod shader;
 mod texture;
 mod texture_atlas;
 
@@ -98,10 +99,10 @@ impl State {
         surface.configure(&device, &config);
 
         let ligth_pipeline = LigthPipeline::new(&device, size.width, size.height);
-        let ligth_shader = LigthShader::new(&device, &ligth_pipeline.textures, surface_format);
+        let ligth_shader = LigthShader::new(&device, &ligth_pipeline.textures);
         let ligth_batch = LigthBatch::new(&device);
 
-        let quad_shader = QuadShader::new(&device, &queue)?;
+        let quad_shader = QuadShader::new(&device, &queue, &ligth_pipeline.textures)?;
         let quad_batch = QuadBatch::new(&device);
 
         let smaa_target = SmaaTarget::new(
@@ -134,7 +135,7 @@ impl State {
     }
 
     fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
-        if new_size.width > 0 && new_size.height > 0 {
+        if new_size.width > 0 && new_size.height > 0 && new_size != self.size {
             self.size = new_size;
 
             self.smaa_target
@@ -144,6 +145,8 @@ impl State {
                 .resize(&self.device, new_size.width, new_size.height);
 
             self.ligth_shader
+                .resize(&self.device, &self.ligth_pipeline.textures);
+            self.quad_shader
                 .resize(&self.device, &self.ligth_pipeline.textures);
 
             self.config.width = new_size.width;

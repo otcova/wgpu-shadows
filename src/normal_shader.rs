@@ -1,4 +1,3 @@
-
 struct VertexInput {
     @builtin(vertex_index) vertex_index: u32,
     @location(0) pos: vec2<f32>,
@@ -42,10 +41,12 @@ fn vs_main(
 var tex_sampler: sampler;
 
 @group(0) @binding(1)
-var texture: texture_2d<f32>;
+var atlas_tex: texture_2d<f32>;
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
-    return textureSample(texture, tex_sampler, in.tex_coords);
+    let color = textureSample(atlas_tex, tex_sampler, in.tex_coords);
+    let ligth = textureSample(ligth_tex, tex_sampler, in.tex_coords).rgb;
+    return vec4(color.rgb * ligth, color.a);
 }
  
