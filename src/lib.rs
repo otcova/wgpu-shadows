@@ -1,6 +1,8 @@
-#![feature(concat_idents)]
+#![feature(concat_idents, float_next_up_down)]
 
+mod camera;
 mod error;
+mod layers;
 mod ligth_batch;
 mod ligth_pipeline;
 mod ligth_shader;
@@ -10,17 +12,22 @@ mod shader;
 mod texture;
 mod texture_atlas;
 mod uniform;
+mod vec_buffer;
 
+use camera::Camera;
 use error::*;
+use layers::QuadLayer;
 use ligth_batch::LigthBatch;
 use ligth_pipeline::LigthPipeline;
 use ligth_shader::LigthShader;
 use quad_batch::QuadBatch;
-use quad_shader::QuadShader;
+use quad_shader::{QuadInstance, QuadShader};
 use smaa::{SmaaMode, SmaaTarget};
+use texture_atlas::TextureAtlas;
+use uniform::*;
 use winit::{
     dpi::LogicalSize,
-    event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent},
+    event::{ElementState, Event, KeyboardInput, MouseButton, VirtualKeyCode, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
     window::{Window, WindowBuilder},
 };
@@ -38,9 +45,14 @@ struct State {
 
     quad_shader: QuadShader,
     quad_batch: QuadBatch,
+    quad_layer: QuadLayer,
 
     ligth_shader: LigthShader,
     ligth_batch: LigthBatch,
+
+    mouse_pos: (f32, f32),
+
+    camera: Camera,
 }
 
 impl State {
@@ -105,6 +117,7 @@ impl State {
 
         let quad_shader = QuadShader::new(&device, &queue, &ligth_pipeline.textures)?;
         let quad_batch = QuadBatch::new(&device);
+        let quad_layer = QuadLayer::new(&device);
 
         let smaa_target = SmaaTarget::new(
             &device,
@@ -114,6 +127,8 @@ impl State {
             surface_format,
             SmaaMode::Smaa1X,
         );
+
+        let camera = Camera::new(&device);
 
         Ok(Self {
             window,
@@ -126,8 +141,11 @@ impl State {
             ligth_shader,
             ligth_batch,
             quad_shader,
+            quad_layer,
             quad_batch,
             smaa_target,
+            mouse_pos: (0., 0.),
+            camera,
         })
     }
 
@@ -149,6 +167,9 @@ impl State {
                 .resize(&self.device, &self.ligth_pipeline.textures);
             self.quad_shader
                 .resize(&self.device, &self.ligth_pipeline.textures);
+
+            self.camera
+                .resize(&self.queue, new_size.width, new_size.height);
 
             self.config.width = new_size.width;
             self.config.height = new_size.height;
@@ -179,13 +200,16 @@ impl State {
                 .start_frame(&self.device, &self.queue, &smaa_frame);
 
         {
-            let mut ligth_pass = ligth_frame.create_render_pass();
+            let ligth_pass = &mut ligth_frame.create_render_pass();
 
-            self.quad_shader.bind(&mut ligth_pass);
-            self.quad_batch.draw(&mut ligth_pass);
+            self.camera.bind(ligth_pass);
 
-            self.ligth_shader.bind(&mut ligth_pass);
-            self.ligth_batch.draw(&mut ligth_pass, &self.queue);
+            self.quad_shader.bind(ligth_pass);
+            self.quad_batch.draw(ligth_pass);
+            self.quad_layer.draw(&self.device, &self.queue, ligth_pass);
+
+            self.ligth_shader.bind(ligth_pass);
+            self.ligth_batch.draw(ligth_pass, &self.queue);
         }
 
         ligth_frame.resolve();
@@ -205,8 +229,8 @@ pub async fn run() {
     let window = WindowBuilder::new()
         .with_title(":)")
         .with_inner_size(LogicalSize {
-            width: 640,
-            height: 640,
+            width: 1280,
+            height: 720,
         })
         .build(&event_loop)
         .unwrap();
@@ -255,6 +279,27 @@ pub async fn run() {
                     WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
                         // new_inner_size is &&mut so we have to dereference it twice
                         state.resize(**new_inner_size);
+                    }
+                    WindowEvent::CursorMoved { position, .. } => {
+                        let w = (state.size.width / 2) as f32;
+                        let h = (state.size.height / 2) as f32;
+                        state.mouse_pos = ((position.x as f32 - w) / h, 1. - position.y as f32 / h);
+                    }
+                    WindowEvent::MouseInput {
+                        state: action,
+                        button,
+                        ..
+                    } => {
+                        if *action == ElementState::Pressed && *button == MouseButton::Left {
+                            let tex = TextureAtlas::view_arrow();
+                            state.quad_layer.push(QuadInstance {
+                                pos: [state.mouse_pos.0, state.mouse_pos.1],
+                                size: tex.size,
+                                angle: 0.,
+                                tex_pos: tex.pos,
+                                tex_size: tex.size,
+                            });
+                        }
                     }
                     _ => {}
                 }

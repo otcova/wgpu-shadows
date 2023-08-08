@@ -44,10 +44,10 @@ impl LigthShader {
             ShaderDescriptor {
                 src: include_str!("ligth_shader.wgsl").into(),
                 textures: &[&textures.normal],
-                uniforms: &[&Uniform::new_layout(
-                    device,
-                    wgpu::ShaderStages::VERTEX_FRAGMENT,
-                )],
+                uniforms: &[
+                    &Uniform::new_layout(device, wgpu::ShaderStages::VERTEX),
+                    &Uniform::new_layout(device, wgpu::ShaderStages::VERTEX_FRAGMENT),
+                ],
                 vertex_layout: LigthInstance::desc(),
                 output_format: wgpu::TextureFormat::Rgb10a2Unorm,
                 blend: wgpu::BlendState {

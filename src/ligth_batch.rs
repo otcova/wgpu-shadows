@@ -40,9 +40,9 @@ impl LigthBatch {
                 device,
                 wgpu::ShaderStages::VERTEX_FRAGMENT,
                 &LigthUniform {
-                    pos: [0., 0., 0.9],
+                    pos: [0., 0., 1f32.next_down()],
                     ligth_index: 2,
-                    ligth_color: [10., 10., 10.],
+                    ligth_color: [1., 1., 1.],
                     _align: 0,
                 },
             ),
@@ -50,7 +50,7 @@ impl LigthBatch {
                 device,
                 wgpu::ShaderStages::VERTEX_FRAGMENT,
                 &LigthUniform {
-                    pos: [0.5, 0., 0.5],
+                    pos: [0.5, 0., 1f32.next_down().next_down()],
                     ligth_index: 2,
                     ligth_color: [15., 10., 10.],
                     _align: 0,
@@ -69,12 +69,30 @@ impl LigthBatch {
     pub fn draw<'a>(&'a mut self, pass: &mut LigthRenderPass<'a>, queue: &wgpu::Queue) {
         self.t += 0.02;
 
+        self.ligth_uniforms[0].update_buffer(
+            queue,
+            &LigthUniform {
+                pos: [
+                    f32::sin(self.t + 0.1),
+                    f32::cos(self.t + 0.1),
+                    1f32.next_down(),
+                ],
+                ligth_index: 2,
+                ligth_color: [50., 50., 50.],
+                _align: 0,
+            },
+        );
+
         self.ligth_uniforms[1].update_buffer(
             queue,
             &LigthUniform {
-                pos: [f32::sin(self.t), f32::cos(self.t), 0.5],
+                pos: [
+                    f32::sin(self.t),
+                    f32::cos(self.t),
+                    1f32.next_down().next_down(),
+                ],
                 ligth_index: 2,
-                ligth_color: [15., 10., 10.],
+                ligth_color: [50., 50., 50.],
                 _align: 0,
             },
         );
@@ -83,7 +101,7 @@ impl LigthBatch {
         pass.ligth.set_vertex_buffer(0, buffer);
 
         for uniform in self.ligth_uniforms.iter() {
-            uniform.bind(1, &mut pass.ligth);
+            uniform.bind(2, &mut pass.ligth);
             pass.ligth.draw(0..4, 0..self.num_instances);
         }
     }

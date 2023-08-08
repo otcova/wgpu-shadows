@@ -106,8 +106,8 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
             texture_views += &formatdoc! {"
                 pub fn view_{name}() -> TextureAtlasView {{
                     TextureAtlasView {{
-                        tex_pos: [{x}f32, {y}f32],
-                        tex_size: [{w}f32, {h}f32],
+                        pos: [{x}f32, {y}f32],
+                        size: [{w}f32, {h}f32],
                     }}
                 }}
             /"};
@@ -154,8 +154,8 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
 
         #[derive(Copy, Clone)]
         pub struct TextureAtlasView {{
-            pub tex_pos: [f32; 2],
-            pub tex_size: [f32; 2],
+            pub pos: [f32; 2],
+            pub size: [f32; 2],
         }}
 
         impl TextureAtlas {{

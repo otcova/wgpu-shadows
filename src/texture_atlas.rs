@@ -11,8 +11,8 @@ pub struct TextureAtlas {
 
 #[derive(Copy, Clone)]
 pub struct TextureAtlasView {
-    pub tex_pos: [f32; 2],
-    pub tex_size: [f32; 2],
+    pub pos: [f32; 2],
+    pub size: [f32; 2],
 }
 
 impl TextureAtlas {
@@ -37,34 +37,34 @@ impl TextureAtlas {
         })
     }
 
-    pub fn view_arrow() -> TextureAtlasView {
-        TextureAtlasView {
-            tex_pos: [0f32, 0f32],
-            tex_size: [0.074395254f32, 0.15625f32],
-        }
-    }
-    pub fn view_bow() -> TextureAtlasView {
-        TextureAtlasView {
-            tex_pos: [0.07485167f32, 0f32],
-            tex_size: [0.1232314f32, 0.3359375f32],
-        }
-    }
     pub fn view_bow_charge_0() -> TextureAtlasView {
         TextureAtlasView {
-            tex_pos: [0.19853948f32, 0f32],
-            tex_size: [0.15107258f32, 0.20703125f32],
-        }
-    }
-    pub fn view_triangles() -> TextureAtlasView {
-        TextureAtlasView {
-            tex_pos: [0.5326335f32, 0f32],
-            tex_size: [0.4673665f32, 1f32],
+            pos: [0.19853948f32, 0f32],
+            size: [0.15107258f32, 0.20703125f32],
         }
     }
     pub fn view_bow_charge_1() -> TextureAtlasView {
         TextureAtlasView {
-            tex_pos: [0.35006845f32, 0f32],
-            tex_size: [0.18210863f32, 0.14648438f32],
+            pos: [0.35006845f32, 0f32],
+            size: [0.18210863f32, 0.14648438f32],
+        }
+    }
+    pub fn view_bow() -> TextureAtlasView {
+        TextureAtlasView {
+            pos: [0.07485167f32, 0f32],
+            size: [0.1232314f32, 0.3359375f32],
+        }
+    }
+    pub fn view_arrow() -> TextureAtlasView {
+        TextureAtlasView {
+            pos: [0f32, 0f32],
+            size: [0.074395254f32, 0.15625f32],
+        }
+    }
+    pub fn view_triangles() -> TextureAtlasView {
+        TextureAtlasView {
+            pos: [0.5326335f32, 0f32],
+            size: [0.4673665f32, 1f32],
         }
     }
 }

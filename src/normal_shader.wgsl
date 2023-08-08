@@ -1,3 +1,11 @@
+struct CameraUniform {
+    pos: vec2<f32>,
+    size: vec2<f32>,
+}
+
+@group(1) @binding(0)
+var<uniform> camera: CameraUniform;
+
 struct VertexInput {
     @builtin(vertex_index) vertex_index: u32,
     @location(0) pos: vec2<f32>,
@@ -29,9 +37,12 @@ fn vs_main(
     let c = cos(model.angle);
     let s = sin(model.angle);
     let rotation_matrix = mat2x2<f32>(c, -s, s, c);
-    let pos = rotation_matrix * (coord - 0.5) * model.size + model.pos;
-    out.clip_position = vec4<f32>(pos, 0., 1.);
+    var pos = rotation_matrix * (coord - 0.5) * model.size + model.pos;
     
+    pos += camera.pos;
+    pos *= camera.size;
+    
+    out.clip_position = vec4<f32>(pos, 0., 1.);
     return out;
 }
 

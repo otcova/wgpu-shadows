@@ -4,8 +4,16 @@ struct LigthUniform {
     color: vec3<f32>,
 }
 
-@group(1) @binding(0)
+@group(2) @binding(0)
 var<uniform> ligth: LigthUniform;
+
+struct CameraUniform {
+    pos: vec2<f32>,
+    size: vec2<f32>,
+}
+
+@group(1) @binding(0)
+var<uniform> camera: CameraUniform;
 
 struct VertexInput {
     @builtin(vertex_index) vertex_index: u32,
@@ -41,6 +49,9 @@ fn vs_main(model: VertexInput) -> VertexOutput {
         }
     }
     
+    out.pos -= camera.pos;
+    out.pos *= camera.size;
+
     out.clip_pos = vec4<f32>(out.pos, ligth.pos.z, 1.);
     return out;
 }

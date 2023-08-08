@@ -2,6 +2,7 @@ use crate::error::*;
 use crate::ligth_pipeline::{LigthRenderPass, LigthTextures};
 use crate::shader::{Shader, ShaderDescriptor};
 use crate::texture_atlas::TextureAtlas;
+use crate::uniform::Uniform;
 
 pub struct QuadShader {
     diffuse: Shader,
@@ -50,7 +51,7 @@ impl QuadShader {
             ShaderDescriptor {
                 src: include_str!("normal_shader.wgsl").into(),
                 textures: &[&atlas.normal_textures[0].view],
-                uniforms: &[],
+                uniforms: &[&Uniform::new_layout(device, wgpu::ShaderStages::VERTEX)],
                 vertex_layout: QuadInstance::desc(),
                 output_format: wgpu::TextureFormat::Rgb10a2Unorm,
                 blend: wgpu::BlendState::ALPHA_BLENDING,
@@ -62,8 +63,12 @@ impl QuadShader {
             device,
             ShaderDescriptor {
                 src: include_str!("diffuse_shader.wgsl").into(),
-                textures: &[&ligth_textures.ligth, &atlas.diffuse_textures[0].view],
-                uniforms: &[],
+                textures: &[
+                    &ligth_textures.ligth,
+                    &atlas.diffuse_textures[0].view,
+                    &atlas.normal_textures[0].view,
+                ],
+                uniforms: &[&Uniform::new_layout(device, wgpu::ShaderStages::VERTEX)],
                 vertex_layout: QuadInstance::desc(),
                 output_format: wgpu::TextureFormat::Bgra8Unorm,
                 blend: wgpu::BlendState::ALPHA_BLENDING,
@@ -81,7 +86,11 @@ impl QuadShader {
     pub fn resize(&mut self, device: &wgpu::Device, textures: &LigthTextures) {
         self.diffuse.update_textures(
             device,
-            &[&textures.ligth, &self.atlas.diffuse_textures[0].view],
+            &[
+                &textures.ligth,
+                &self.atlas.diffuse_textures[0].view,
+                &self.atlas.normal_textures[0].view,
+            ],
         );
     }
 
