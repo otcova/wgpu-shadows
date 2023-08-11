@@ -1,11 +1,11 @@
-use wgpu::{util::DeviceExt, BufferAddress};
-
 use crate::WgpuContext;
+use std::ops::Range;
+use wgpu::{util::DeviceExt, BufferAddress};
 
 pub struct VecBuffer<T: bytemuck::NoUninit> {
     data: Vec<T>,
     buffer: wgpu::Buffer,
-    update_index: Option<usize>,
+    update_range: Option<Range<usize>>,
 }
 
 impl<T: bytemuck::NoUninit> VecBuffer<T> {
@@ -19,15 +19,30 @@ impl<T: bytemuck::NoUninit> VecBuffer<T> {
                     contents: &[],
                     usage,
                 }),
-            update_index: None,
+            update_range: None,
         }
     }
 
-    pub fn push(&mut self, quad: T) {
-        if self.update_index.is_none() {
-            self.update_index = Some(self.data.len());
+    pub fn get_mut(&mut self, idx: usize) -> &mut T {
+        if let Some(range) = &mut self.update_range {
+            range.start = range.start.min(idx);
+            range.end = range.end.max(idx + 1);
+        } else {
+            self.update_range = Some(idx..idx + 1);
         }
+
+        &mut self.data[idx]
+    }
+
+    pub fn push(&mut self, quad: T) {
         self.data.push(quad);
+
+        let end = self.data.len();
+        if let Some(range) = &mut self.update_range {
+            range.end = end;
+        } else {
+            self.update_range = Some(end - 1..end);
+        }
     }
 
     pub fn len(&self) -> usize {
@@ -39,9 +54,10 @@ impl<T: bytemuck::NoUninit> VecBuffer<T> {
             return None;
         }
 
-        let data_size = (self.data.len() * std::mem::size_of::<T>()) as BufferAddress;
+        let item_bytes: usize = std::mem::size_of::<T>();
+        let data_size = (self.data.len() * item_bytes) as BufferAddress;
 
-        if let Some(update_index) = self.update_index {
+        if let Some(update_range) = self.update_range.clone() {
             if self.buffer.size() < data_size {
                 // Realocate Buffer
                 self.buffer = ctx
@@ -55,11 +71,11 @@ impl<T: bytemuck::NoUninit> VecBuffer<T> {
                 // Update Buffer
                 ctx.queue.write_buffer(
                     &self.buffer,
-                    (update_index * std::mem::size_of::<T>()) as BufferAddress,
-                    bytemuck::cast_slice(&self.data[update_index..]),
+                    (update_range.start * item_bytes) as BufferAddress,
+                    bytemuck::cast_slice(&self.data[update_range]),
                 );
             }
-            self.update_index = None;
+            self.update_range = None;
         }
 
         Some(self.buffer.slice(0..data_size))

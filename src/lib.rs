@@ -3,7 +3,6 @@
 mod camera;
 mod error;
 mod layers;
-mod ligth_batch;
 mod ligth_pipeline;
 mod ligth_shader;
 mod quad_batch;
@@ -17,8 +16,7 @@ mod vec_buffer;
 
 pub(crate) use camera::Camera;
 use error::*;
-use layers::QuadLayer;
-use ligth_batch::LigthBatch;
+use layers::{LigthLayer, QuadLayer};
 use ligth_pipeline::LigthPipeline;
 use ligth_shader::LigthShader;
 use quad_batch::QuadBatch;
@@ -52,7 +50,7 @@ struct State {
     quad_layer: QuadLayer,
 
     ligth_shader: LigthShader,
-    ligth_batch: LigthBatch,
+    ligth_layer: LigthLayer,
 
     mouse_pos: (f32, f32),
 
@@ -119,7 +117,7 @@ impl State {
 
         let ligth_pipeline = LigthPipeline::new(&context, size.width, size.height);
         let ligth_shader = LigthShader::new(&context, &ligth_pipeline.textures);
-        let ligth_batch = LigthBatch::new(&context);
+        let mut ligth_layer = LigthLayer::new(&context);
 
         let quad_shader = QuadShader::new(&context, &ligth_pipeline.textures)?;
         let quad_batch = QuadBatch::new(&context);
@@ -136,6 +134,15 @@ impl State {
 
         let camera = Camera::new(&context);
 
+        // ligth_layer.push(ligth_shader::LigthInstance { a: [], b: [] }));
+        ligth_layer.add_ligth(
+            &context,
+            &ligth_shader::LigthUniform {
+                pos: [0., 0., 0.2],
+                ligth_color: 0x3FFFFFFF,
+            },
+        );
+
         Ok(Self {
             window,
             surface,
@@ -144,7 +151,7 @@ impl State {
             size,
             ligth_pipeline,
             ligth_shader,
-            ligth_batch,
+            ligth_layer,
             quad_shader,
             quad_layer,
             quad_batch,
@@ -210,7 +217,7 @@ impl State {
             self.quad_layer.draw(ligth_pass);
 
             self.ligth_shader.bind(ligth_pass);
-            self.ligth_batch.draw(ligth_pass);
+            self.ligth_layer.draw(ligth_pass);
         }
 
         ligth_frame.resolve();
@@ -293,7 +300,7 @@ pub async fn run() {
                     } => {
                         if *action == ElementState::Pressed && *button == MouseButton::Left {
                             let tex = TextureAtlas::view_arrow();
-                            let s = 10f32;
+                            let s = 1000f32;
                             state.quad_layer.push(QuadInstance {
                                 pos: [state.mouse_pos.0, state.mouse_pos.1],
                                 size: [tex.pixel_size[0] as f32 / s, tex.pixel_size[1] as f32 / s],

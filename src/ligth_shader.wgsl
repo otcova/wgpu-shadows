@@ -1,11 +1,13 @@
 struct LigthUniform {
     pos: vec3<f32>,
-    index: u32,    
-    color: vec3<f32>,
+    color: u32,
 }
 
-@group(2) @binding(0)
+@group(3) @binding(0)
 var<uniform> ligth: LigthUniform;
+
+@group(2) @binding(0)
+var<uniform> ligth_index: u32;
 
 struct CameraUniform {
     pos: vec2<f32>,
@@ -36,7 +38,7 @@ fn quad_mesh(i: u32) -> vec2<f32> {
 fn vs_main(model: VertexInput) -> VertexOutput {
     var out: VertexOutput;
 
-    if model.instance_index == ligth.index {
+    if model.instance_index == ligth_index {
         out.ligth = 1.;
         out.pos = quad_mesh(model.vertex_index) - 1.;
     } else  {
@@ -61,14 +63,22 @@ var tex_sampler: sampler;
 
 @group(0) @binding(1)
 var normal_tex: texture_2d<f32>;
- 
+
+fn decode_u32_color() -> vec3<f32> {
+    let color = ligth.color;
+    let b = color & 0x3FFu;
+    let g = (color >> 10u) & 0x3FFu;
+    let r = color >> 20u;
+    return vec3(f32(r), f32(g), f32(b)) / 255.;
+}
+
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let normal_color = textureSample(normal_tex, tex_sampler, in.pos * vec2(0.5, -0.5) + 0.5).rgb;
         
     if in.ligth > 0. {
          let ligth_pos = vec3(ligth.pos.xy, 0.2);
-         let ligth_color = ligth.color;
+         let ligth_color = decode_u32_color();
 
          let dist_vec = ligth_pos - vec3(in.pos, 0.);
          let sq_dist = dot(dist_vec, dist_vec);

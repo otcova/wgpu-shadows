@@ -7,13 +7,13 @@ pub struct LigthShader {
 }
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
-pub struct LigthInstance {
+#[derive(Default, Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
+pub struct ShadowInstance {
     pub a: [f32; 2],
     pub b: [f32; 2],
 }
 
-impl LigthInstance {
+impl ShadowInstance {
     const ATTRIBS: [wgpu::VertexAttribute; 2] = wgpu::vertex_attr_array![
         0 => Float32x2, // pos a
         1 => Float32x2, // pos b
@@ -21,7 +21,7 @@ impl LigthInstance {
 
     pub fn desc() -> wgpu::VertexBufferLayout<'static> {
         wgpu::VertexBufferLayout {
-            array_stride: std::mem::size_of::<LigthInstance>() as wgpu::BufferAddress,
+            array_stride: std::mem::size_of::<ShadowInstance>() as wgpu::BufferAddress,
             step_mode: wgpu::VertexStepMode::Instance,
             attributes: &Self::ATTRIBS,
         }
@@ -32,9 +32,7 @@ impl LigthInstance {
 #[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct LigthUniform {
     pub pos: [f32; 3],
-    pub ligth_index: u32,
-    pub ligth_color: [f32; 3],
-    pub _align: u32,
+    pub ligth_color: u32,
 }
 
 impl LigthShader {
@@ -46,9 +44,10 @@ impl LigthShader {
                 textures: &[&textures.normal],
                 uniforms: &[
                     &Uniform::new_layout(ctx, wgpu::ShaderStages::VERTEX),
+                    &Uniform::new_layout(ctx, wgpu::ShaderStages::VERTEX),
                     &Uniform::new_layout(ctx, wgpu::ShaderStages::VERTEX_FRAGMENT),
                 ],
-                vertex_layout: LigthInstance::desc(),
+                vertex_layout: ShadowInstance::desc(),
                 output_format: wgpu::TextureFormat::Rgb10a2Unorm,
                 blend: wgpu::BlendState {
                     color: wgpu::BlendComponent {

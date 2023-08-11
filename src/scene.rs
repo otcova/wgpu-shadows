@@ -1,4 +1,4 @@
-use crate::layers::QuadLayer;
+use crate::layers::{LigthLayer, QuadLayer};
 use crate::ligth_pipeline::LigthRenderPass;
 use crate::{Camera, WgpuContext};
 
@@ -9,6 +9,7 @@ struct SceneLayers {
     boxes: QuadLayer,
     top_particles: QuadLayer,
     frame: QuadLayer,
+    ligths: LigthLayer,
 }
 
 struct Scene {
@@ -27,6 +28,7 @@ impl Scene {
                 boxes: QuadLayer::new(ctx),
                 top_particles: QuadLayer::new(ctx),
                 frame: QuadLayer::new(ctx),
+                ligths: LigthLayer::new(ctx),
             },
             game_camera: Camera::new(ctx),
             frame_camera: Camera::new(ctx),
@@ -42,6 +44,8 @@ impl Scene {
         self.layers.players.draw(pass);
         self.layers.boxes.draw(pass);
         self.layers.top_particles.draw(pass);
+
+        self.layers.ligths.draw(pass);
 
         self.frame_camera.bind(pass);
         self.layers.frame.draw(pass);
