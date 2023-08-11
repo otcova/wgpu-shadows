@@ -56,6 +56,7 @@ var atlas_tex: texture_2d<f32>;
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
-    return textureSample(atlas_tex, tex_sampler, in.tex_coords);
+    let color = textureSample(atlas_tex, tex_sampler, in.tex_coords);
+    return vec4(color.rgb, select(0., 1., color.a > 0.3));
 }
  

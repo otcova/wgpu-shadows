@@ -1,4 +1,4 @@
-use crate::{ligth_pipeline::LigthRenderPass, texture_atlas::TextureAtlas};
+use crate::{ligth_pipeline::LigthRenderPass, texture_atlas::TextureAtlas, WgpuContext};
 
 use super::quad_shader::QuadInstance;
 use wgpu::util::DeviceExt;
@@ -9,7 +9,7 @@ pub struct QuadBatch {
 }
 
 impl QuadBatch {
-    pub fn new(device: &wgpu::Device) -> Self {
+    pub fn new(ctx: &WgpuContext) -> Self {
         let instances: &[QuadInstance] = &[
             QuadInstance {
                 pos: [0., 0.],
@@ -35,11 +35,13 @@ impl QuadBatch {
         ];
 
         let num_instances = instances.len() as u32;
-        let instances_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Quad Vertex Buffer"),
-            contents: bytemuck::cast_slice(instances),
-            usage: wgpu::BufferUsages::VERTEX,
-        });
+        let instances_buffer = ctx
+            .device
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("Quad Vertex Buffer"),
+                contents: bytemuck::cast_slice(instances),
+                usage: wgpu::BufferUsages::VERTEX,
+            });
 
         Self {
             instances_buffer,

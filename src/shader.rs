@@ -1,4 +1,4 @@
-use crate::texture::Texture;
+use crate::{texture::Texture, WgpuContext};
 use std::borrow::Cow;
 
 pub struct Shader {
@@ -19,13 +19,15 @@ pub struct ShaderDescriptor<'a> {
 }
 
 impl Shader {
-    pub fn new(device: &wgpu::Device, desc: ShaderDescriptor) -> Self {
-        let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: None,
-            source: wgpu::ShaderSource::Wgsl(desc.src),
-        });
+    pub fn new(ctx: &WgpuContext, desc: ShaderDescriptor) -> Self {
+        let shader = ctx
+            .device
+            .create_shader_module(wgpu::ShaderModuleDescriptor {
+                label: None,
+                source: wgpu::ShaderSource::Wgsl(desc.src),
+            });
 
-        let sampler = Texture::create_linear_sampler(&device);
+        let sampler = Texture::create_linear_sampler(&ctx.device);
 
         let mut entries = Vec::with_capacity(desc.textures.len() + 1);
 
@@ -49,58 +51,63 @@ impl Shader {
             });
         }
 
-        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            label: Some("Texture bind group layout"),
-            entries: &entries,
-        });
+        let bind_group_layout =
+            ctx.device
+                .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                    label: Some("Texture bind group layout"),
+                    entries: &entries,
+                });
 
         let mut bind_group_layouts = Vec::with_capacity(1 + desc.uniforms.len());
         bind_group_layouts.push(&bind_group_layout);
         bind_group_layouts.extend_from_slice(desc.uniforms);
 
         let render_pipeline_layout =
-            device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+            ctx.device
+                .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                    label: None,
+                    bind_group_layouts: &bind_group_layouts,
+                    push_constant_ranges: &[],
+                });
+
+        let pipeline = ctx
+            .device
+            .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: None,
-                bind_group_layouts: &bind_group_layouts,
-                push_constant_ranges: &[],
+                layout: Some(&render_pipeline_layout),
+                vertex: wgpu::VertexState {
+                    module: &shader,
+                    entry_point: "vs_main",
+                    buffers: &[desc.vertex_layout],
+                },
+                fragment: Some(wgpu::FragmentState {
+                    module: &shader,
+                    entry_point: "fs_main",
+                    targets: &[Some(wgpu::ColorTargetState {
+                        format: desc.output_format,
+                        blend: Some(desc.blend),
+                        write_mask: wgpu::ColorWrites::ALL,
+                    })],
+                }),
+                primitive: wgpu::PrimitiveState {
+                    topology: wgpu::PrimitiveTopology::TriangleStrip,
+                    strip_index_format: None,
+                    front_face: wgpu::FrontFace::Ccw,
+                    cull_mode: None,
+                    polygon_mode: wgpu::PolygonMode::Fill,
+                    unclipped_depth: false,
+                    conservative: false,
+                },
+                depth_stencil: desc.depth_stencil,
+                multisample: wgpu::MultisampleState {
+                    count: 1,
+                    mask: !0,
+                    alpha_to_coverage_enabled: false,
+                },
+                multiview: None,
             });
 
-        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: None,
-            layout: Some(&render_pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: "vs_main",
-                buffers: &[desc.vertex_layout],
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: "fs_main",
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: desc.output_format,
-                    blend: Some(desc.blend),
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-            }),
-            primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleStrip,
-                strip_index_format: None,
-                front_face: wgpu::FrontFace::Ccw,
-                cull_mode: None,
-                polygon_mode: wgpu::PolygonMode::Fill,
-                unclipped_depth: false,
-                conservative: false,
-            },
-            depth_stencil: desc.depth_stencil,
-            multisample: wgpu::MultisampleState {
-                count: 1,
-                mask: !0,
-                alpha_to_coverage_enabled: false,
-            },
-            multiview: None,
-        });
-
-        let bind_group = Self::new_bind_group(device, &bind_group_layout, &sampler, desc.textures);
+        let bind_group = Self::new_bind_group(ctx, &bind_group_layout, &sampler, desc.textures);
 
         Self {
             pipeline,
@@ -111,7 +118,7 @@ impl Shader {
     }
 
     fn new_bind_group(
-        device: &wgpu::Device,
+        ctx: &WgpuContext,
         layout: &wgpu::BindGroupLayout,
         sampler: &wgpu::Sampler,
         textures: &[&wgpu::TextureView],
@@ -131,16 +138,16 @@ impl Shader {
             binding += 1;
         }
 
-        device.create_bind_group(&wgpu::BindGroupDescriptor {
+        ctx.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("Texture bind group"),
             layout,
             entries: &entries,
         })
     }
 
-    pub fn update_textures(&mut self, device: &wgpu::Device, textures: &[&wgpu::TextureView]) {
+    pub fn update_textures(&mut self, ctx: &WgpuContext, textures: &[&wgpu::TextureView]) {
         self.bind_group =
-            Self::new_bind_group(device, &self.bind_group_layout, &self.sampler, textures);
+            Self::new_bind_group(ctx, &self.bind_group_layout, &self.sampler, textures);
     }
 
     pub fn bind<'a>(&'a self, pass: &mut wgpu::RenderPass<'a>) {

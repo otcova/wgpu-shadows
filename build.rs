@@ -10,7 +10,7 @@ use texture_packer::{
 const ATLAS_CONFIG: TexturePackerConfig = TexturePackerConfig {
     max_width: 1 << 12,
     max_height: 1 << 12,
-    allow_rotation: true,
+    allow_rotation: false,
     texture_outlines: false,
     border_padding: 0,
     texture_padding: 1,
@@ -78,7 +78,7 @@ fn export_textures<'a>(
         let exporter = ImageExporter::export(page).unwrap();
 
         let encoder = webp::Encoder::from_image(&exporter).unwrap();
-        let encoded_webp: webp::WebPMemory = encoder.encode_lossless();
+        let encoded_webp: webp::WebPMemory = encoder.encode_simple(true, 100.).unwrap();
 
         let path = format!("atlas/{}-{}.webp", name, i);
         fs::write(path, encoded_webp.as_bytes()).unwrap();
@@ -100,14 +100,19 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
         for (name, frame) in page.get_frames() {
             let x = (frame.frame.x as f32) / page_w + page_offset;
             let y = (frame.frame.y as f32) / page_h + page_offset;
-            let w = (frame.frame.w as f32) / page_w + page_offset;
-            let h = (frame.frame.h as f32) / page_h + page_offset;
+
+            let pixel_w = frame.frame.w;
+            let pixel_h = frame.frame.h;
+
+            let w = (pixel_w as f32) / page_w;
+            let h = (pixel_h as f32) / page_h;
 
             texture_views += &formatdoc! {"
                 pub fn view_{name}() -> TextureAtlasView {{
                     TextureAtlasView {{
                         pos: [{x}f32, {y}f32],
                         size: [{w}f32, {h}f32],
+                        pixel_size: [{pixel_w}u32, {pixel_h}u32],
                     }}
                 }}
             /"};
@@ -116,8 +121,7 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
 
         load_diffuse_textures += &formatdoc! {r#"
             {indent}Texture::from_bytes(
-            {indent}    device,
-            {indent}    queue,
+            {indent}    ctx,
             {indent}    include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/atlas/diffuse-{page_i}.webp")),
             {indent}    "Diffuse Texture {page_i}",
             {indent})?,
@@ -126,8 +130,7 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
         };
         load_normal_textures += &formatdoc! {r#"
             {indent}Texture::from_bytes(
-            {indent}    device,
-            {indent}    queue,
+            {indent}    ctx,
             {indent}    include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/atlas/normal-{page_i}.webp")),
             {indent}    "Normal Texture {page_i}",
             {indent})?,
@@ -146,6 +149,7 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
         
         use crate::error::ErrResult;
         use crate::texture::Texture;
+        use crate::WgpuContext;
         
         pub struct TextureAtlas {{
             pub diffuse_textures: [Texture; {pages_count}],
@@ -156,10 +160,11 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
         pub struct TextureAtlasView {{
             pub pos: [f32; 2],
             pub size: [f32; 2],
+            pub pixel_size: [u32; 2],
         }}
 
         impl TextureAtlas {{
-            pub fn load(device: &wgpu::Device, queue: &wgpu::Queue) -> ErrResult<Self> {{
+            pub fn load(ctx: &WgpuContext) -> ErrResult<Self> {{
                 Ok(Self {{
                     diffuse_textures: [
         {load_diffuse_textures}

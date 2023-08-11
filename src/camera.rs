@@ -1,5 +1,6 @@
 use crate::ligth_pipeline::LigthRenderPass;
 use crate::uniform::Uniform;
+use crate::WgpuContext;
 
 pub struct Camera {
     uniform: Uniform,
@@ -13,10 +14,10 @@ struct CameraUniform {
 }
 
 impl Camera {
-    pub fn new(device: &wgpu::Device) -> Self {
+    pub fn new(ctx: &WgpuContext) -> Self {
         Self {
             uniform: Uniform::new(
-                device,
+                ctx,
                 wgpu::ShaderStages::VERTEX,
                 &CameraUniform {
                     pos: [0., 0.],
@@ -26,9 +27,9 @@ impl Camera {
         }
     }
 
-    pub fn resize(&self, queue: &wgpu::Queue, width: u32, height: u32) {
+    pub fn resize(&self, ctx: &WgpuContext, width: u32, height: u32) {
         self.uniform.update_buffer(
-            queue,
+            ctx,
             &CameraUniform {
                 pos: [0., 0.],
                 size: [height as f32 / width as f32, 1.],

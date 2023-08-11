@@ -1,8 +1,8 @@
-use crate::error::*;
 use crate::ligth_pipeline::{LigthRenderPass, LigthTextures};
 use crate::shader::{Shader, ShaderDescriptor};
 use crate::texture_atlas::TextureAtlas;
 use crate::uniform::Uniform;
+use crate::{error::*, WgpuContext};
 
 pub struct QuadShader {
     diffuse: Shader,
@@ -39,19 +39,15 @@ impl QuadInstance {
 }
 
 impl QuadShader {
-    pub fn new(
-        device: &wgpu::Device,
-        queue: &wgpu::Queue,
-        ligth_textures: &LigthTextures,
-    ) -> ErrResult<Self> {
-        let atlas = TextureAtlas::load(&device, &queue).context("Unable to load texture atlas")?;
+    pub fn new(ctx: &WgpuContext, ligth_textures: &LigthTextures) -> ErrResult<Self> {
+        let atlas = TextureAtlas::load(ctx).context("Unable to load texture atlas")?;
 
         let normal = Shader::new(
-            device,
+            ctx,
             ShaderDescriptor {
                 src: include_str!("normal_shader.wgsl").into(),
                 textures: &[&atlas.normal_textures[0].view],
-                uniforms: &[&Uniform::new_layout(device, wgpu::ShaderStages::VERTEX)],
+                uniforms: &[&Uniform::new_layout(ctx, wgpu::ShaderStages::VERTEX)],
                 vertex_layout: QuadInstance::desc(),
                 output_format: wgpu::TextureFormat::Rgb10a2Unorm,
                 blend: wgpu::BlendState::ALPHA_BLENDING,
@@ -60,7 +56,7 @@ impl QuadShader {
         );
 
         let diffuse = Shader::new(
-            device,
+            ctx,
             ShaderDescriptor {
                 src: include_str!("diffuse_shader.wgsl").into(),
                 textures: &[
@@ -68,7 +64,7 @@ impl QuadShader {
                     &atlas.diffuse_textures[0].view,
                     &atlas.normal_textures[0].view,
                 ],
-                uniforms: &[&Uniform::new_layout(device, wgpu::ShaderStages::VERTEX)],
+                uniforms: &[&Uniform::new_layout(ctx, wgpu::ShaderStages::VERTEX)],
                 vertex_layout: QuadInstance::desc(),
                 output_format: wgpu::TextureFormat::Bgra8Unorm,
                 blend: wgpu::BlendState::ALPHA_BLENDING,
@@ -83,9 +79,9 @@ impl QuadShader {
         })
     }
 
-    pub fn resize(&mut self, device: &wgpu::Device, textures: &LigthTextures) {
+    pub fn resize(&mut self, ctx: &WgpuContext, textures: &LigthTextures) {
         self.diffuse.update_textures(
-            device,
+            ctx,
             &[
                 &textures.ligth,
                 &self.atlas.diffuse_textures[0].view,

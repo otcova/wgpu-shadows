@@ -1,4 +1,4 @@
-use crate::error::ErrResult;
+use crate::{error::ErrResult, WgpuContext};
 
 pub struct Texture {
     pub texture: wgpu::Texture,
@@ -6,19 +6,13 @@ pub struct Texture {
 }
 
 impl Texture {
-    pub fn from_bytes(
-        device: &wgpu::Device,
-        queue: &wgpu::Queue,
-        bytes: &[u8],
-        label: &str,
-    ) -> ErrResult<Self> {
+    pub fn from_bytes(ctx: &WgpuContext, bytes: &[u8], label: &str) -> ErrResult<Self> {
         let img = image::load_from_memory(bytes)?;
-        Self::from_image(device, queue, &img, Some(label))
+        Self::from_image(ctx, &img, Some(label))
     }
 
     pub fn from_image(
-        device: &wgpu::Device,
-        queue: &wgpu::Queue,
+        ctx: &WgpuContext,
         img: &image::DynamicImage,
         label: Option<&str>,
     ) -> ErrResult<Self> {
@@ -30,7 +24,7 @@ impl Texture {
             height: dimensions.1,
             depth_or_array_layers: 1,
         };
-        let texture = device.create_texture(&wgpu::TextureDescriptor {
+        let texture = ctx.device.create_texture(&wgpu::TextureDescriptor {
             label,
             size,
             mip_level_count: 1,
@@ -41,7 +35,7 @@ impl Texture {
             view_formats: &[],
         });
 
-        queue.write_texture(
+        ctx.queue.write_texture(
             wgpu::ImageCopyTexture {
                 aspect: wgpu::TextureAspect::All,
                 texture: &texture,

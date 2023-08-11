@@ -8,13 +8,14 @@ mod ligth_pipeline;
 mod ligth_shader;
 mod quad_batch;
 mod quad_shader;
+mod scene;
 mod shader;
 mod texture;
 mod texture_atlas;
 mod uniform;
 mod vec_buffer;
 
-use camera::Camera;
+pub(crate) use camera::Camera;
 use error::*;
 use layers::QuadLayer;
 use ligth_batch::LigthBatch;
@@ -24,7 +25,6 @@ use quad_batch::QuadBatch;
 use quad_shader::{QuadInstance, QuadShader};
 use smaa::{SmaaMode, SmaaTarget};
 use texture_atlas::TextureAtlas;
-use uniform::*;
 use winit::{
     dpi::LogicalSize,
     event::{ElementState, Event, KeyboardInput, MouseButton, VirtualKeyCode, WindowEvent},
@@ -32,10 +32,14 @@ use winit::{
     window::{Window, WindowBuilder},
 };
 
+pub struct WgpuContext {
+    pub device: wgpu::Device,
+    pub queue: wgpu::Queue,
+}
+
 struct State {
     surface: wgpu::Surface,
-    device: wgpu::Device,
-    queue: wgpu::Queue,
+    context: WgpuContext,
     config: wgpu::SurfaceConfiguration,
     size: winit::dpi::PhysicalSize<u32>,
     window: Window,
@@ -92,6 +96,8 @@ impl State {
             )
             .await?;
 
+        let context = WgpuContext { device, queue };
+
         let surface_caps = surface.get_capabilities(&adapter);
         let surface_format = *surface_caps
             .formats
@@ -109,32 +115,31 @@ impl State {
             view_formats: vec![],
         };
 
-        surface.configure(&device, &config);
+        surface.configure(&context.device, &config);
 
-        let ligth_pipeline = LigthPipeline::new(&device, size.width, size.height);
-        let ligth_shader = LigthShader::new(&device, &ligth_pipeline.textures);
-        let ligth_batch = LigthBatch::new(&device);
+        let ligth_pipeline = LigthPipeline::new(&context, size.width, size.height);
+        let ligth_shader = LigthShader::new(&context, &ligth_pipeline.textures);
+        let ligth_batch = LigthBatch::new(&context);
 
-        let quad_shader = QuadShader::new(&device, &queue, &ligth_pipeline.textures)?;
-        let quad_batch = QuadBatch::new(&device);
-        let quad_layer = QuadLayer::new(&device);
+        let quad_shader = QuadShader::new(&context, &ligth_pipeline.textures)?;
+        let quad_batch = QuadBatch::new(&context);
+        let quad_layer = QuadLayer::new(&context);
 
         let smaa_target = SmaaTarget::new(
-            &device,
-            &queue,
+            &context.device,
+            &context.queue,
             size.width,
             size.height,
             surface_format,
             SmaaMode::Smaa1X,
         );
 
-        let camera = Camera::new(&device);
+        let camera = Camera::new(&context);
 
         Ok(Self {
             window,
             surface,
-            device,
-            queue,
+            context,
             config,
             size,
             ligth_pipeline,
@@ -158,22 +163,20 @@ impl State {
             self.size = new_size;
 
             self.smaa_target
-                .resize(&self.device, new_size.width, new_size.height);
+                .resize(&self.context.device, new_size.width, new_size.height);
 
             self.ligth_pipeline
-                .resize(&self.device, new_size.width, new_size.height);
-
+                .resize(&self.context, new_size.width, new_size.height);
             self.ligth_shader
-                .resize(&self.device, &self.ligth_pipeline.textures);
+                .resize(&self.context, &self.ligth_pipeline.textures);
             self.quad_shader
-                .resize(&self.device, &self.ligth_pipeline.textures);
-
+                .resize(&self.context, &self.ligth_pipeline.textures);
             self.camera
-                .resize(&self.queue, new_size.width, new_size.height);
+                .resize(&self.context, new_size.width, new_size.height);
 
             self.config.width = new_size.width;
             self.config.height = new_size.height;
-            self.surface.configure(&self.device, &self.config);
+            self.surface.configure(&self.context.device, &self.config);
         }
     }
 
@@ -191,13 +194,11 @@ impl State {
             .texture
             .create_view(&wgpu::TextureViewDescriptor::default());
 
-        let smaa_frame = self
-            .smaa_target
-            .start_frame(&self.device, &self.queue, &view);
+        let smaa_frame =
+            self.smaa_target
+                .start_frame(&self.context.device, &self.context.queue, &view);
 
-        let mut ligth_frame =
-            self.ligth_pipeline
-                .start_frame(&self.device, &self.queue, &smaa_frame);
+        let mut ligth_frame = self.ligth_pipeline.start_frame(&self.context, &smaa_frame);
 
         {
             let ligth_pass = &mut ligth_frame.create_render_pass();
@@ -206,10 +207,10 @@ impl State {
 
             self.quad_shader.bind(ligth_pass);
             self.quad_batch.draw(ligth_pass);
-            self.quad_layer.draw(&self.device, &self.queue, ligth_pass);
+            self.quad_layer.draw(ligth_pass);
 
             self.ligth_shader.bind(ligth_pass);
-            self.ligth_batch.draw(ligth_pass, &self.queue);
+            self.ligth_batch.draw(ligth_pass);
         }
 
         ligth_frame.resolve();
@@ -292,9 +293,10 @@ pub async fn run() {
                     } => {
                         if *action == ElementState::Pressed && *button == MouseButton::Left {
                             let tex = TextureAtlas::view_arrow();
+                            let s = 10f32;
                             state.quad_layer.push(QuadInstance {
                                 pos: [state.mouse_pos.0, state.mouse_pos.1],
-                                size: tex.size,
+                                size: [tex.pixel_size[0] as f32 / s, tex.pixel_size[1] as f32 / s],
                                 angle: 0.,
                                 tex_pos: tex.pos,
                                 tex_size: tex.size,

@@ -1,7 +1,7 @@
 use super::ligth_shader::LigthInstance;
 use crate::ligth_pipeline::LigthRenderPass;
 use crate::ligth_shader::LigthUniform;
-use crate::uniform::*;
+use crate::{uniform::*, WgpuContext};
 use wgpu::util::DeviceExt;
 
 pub struct LigthBatch {
@@ -27,17 +27,19 @@ const INSTANCES: &[LigthInstance] = &[
 ];
 
 impl LigthBatch {
-    pub fn new(device: &wgpu::Device) -> Self {
+    pub fn new(ctx: &WgpuContext) -> Self {
         let num_instances = INSTANCES.len() as u32;
-        let shadows_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Ligth Instances Buffer"),
-            contents: bytemuck::cast_slice(INSTANCES),
-            usage: wgpu::BufferUsages::VERTEX,
-        });
+        let shadows_buffer = ctx
+            .device
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("Ligth Instances Buffer"),
+                contents: bytemuck::cast_slice(INSTANCES),
+                usage: wgpu::BufferUsages::VERTEX,
+            });
 
         let ligth_uniforms = vec![
             Uniform::new(
-                device,
+                ctx,
                 wgpu::ShaderStages::VERTEX_FRAGMENT,
                 &LigthUniform {
                     pos: [0., 0., 1f32.next_down()],
@@ -47,7 +49,7 @@ impl LigthBatch {
                 },
             ),
             Uniform::new(
-                device,
+                ctx,
                 wgpu::ShaderStages::VERTEX_FRAGMENT,
                 &LigthUniform {
                     pos: [0.5, 0., 1f32.next_down().next_down()],
@@ -66,11 +68,11 @@ impl LigthBatch {
         }
     }
 
-    pub fn draw<'a>(&'a mut self, pass: &mut LigthRenderPass<'a>, queue: &wgpu::Queue) {
+    pub fn draw<'a>(&'a mut self, pass: &mut LigthRenderPass<'a>) {
         self.t += 0.02;
 
         self.ligth_uniforms[0].update_buffer(
-            queue,
+            pass.context,
             &LigthUniform {
                 pos: [
                     f32::sin(self.t + 0.1),
@@ -84,7 +86,7 @@ impl LigthBatch {
         );
 
         self.ligth_uniforms[1].update_buffer(
-            queue,
+            pass.context,
             &LigthUniform {
                 pos: [
                     f32::sin(self.t),

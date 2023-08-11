@@ -1,3 +1,5 @@
+use crate::WgpuContext;
+
 pub struct LigthTextures {
     pub normal: wgpu::TextureView,
     pub ligth: wgpu::TextureView,
@@ -18,7 +20,7 @@ pub struct LigthFrame<'a> {
     encoders: Encoders,
 
     output_view: &'a wgpu::TextureView,
-    queue: &'a wgpu::Queue,
+    context: &'a WgpuContext,
     ligth_pipeline: &'a mut LigthPipeline,
 }
 
@@ -26,11 +28,14 @@ pub struct LigthRenderPass<'a> {
     pub normal: wgpu::RenderPass<'a>,
     pub ligth: wgpu::RenderPass<'a>,
     pub diffuse: wgpu::RenderPass<'a>,
+
+    pub context: &'a WgpuContext,
 }
 
 impl<'a> LigthFrame<'a> {
     pub fn create_render_pass<'b>(&'b mut self) -> LigthRenderPass<'b> {
         LigthRenderPass {
+            context: self.context,
             normal: self
                 .encoders
                 .normal
@@ -92,22 +97,28 @@ impl<'a> LigthFrame<'a> {
     }
 
     pub fn resolve(self) {
-        self.encoders.finish(self.queue);
+        self.encoders.finish(&self.context.queue);
     }
 }
 
 impl Encoders {
-    fn new(device: &wgpu::Device) -> Self {
+    fn new(ctx: &WgpuContext) -> Self {
         Self {
-            normal: device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                label: Some("Normal command encoder"),
-            }),
-            ligth: device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                label: Some("Ligth command encoder"),
-            }),
-            diffuse: device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                label: Some("Diffuse command encoder"),
-            }),
+            normal: ctx
+                .device
+                .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                    label: Some("Normal command encoder"),
+                }),
+            ligth: ctx
+                .device
+                .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                    label: Some("Ligth command encoder"),
+                }),
+            diffuse: ctx
+                .device
+                .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                    label: Some("Diffuse command encoder"),
+                }),
         }
     }
 
@@ -121,7 +132,7 @@ impl Encoders {
 }
 
 impl LigthTextures {
-    fn new(device: &wgpu::Device, width: u32, height: u32) -> Self {
+    fn new(ctx: &WgpuContext, width: u32, height: u32) -> Self {
         let size = wgpu::Extent3d {
             width,
             height,
@@ -139,19 +150,20 @@ impl LigthTextures {
         };
 
         Self {
-            normal: device.create_texture(&texture_desc).create_view(
+            normal: ctx.device.create_texture(&texture_desc).create_view(
                 &wgpu::TextureViewDescriptor {
                     label: Some("Normal texture"),
                     ..Default::default()
                 },
             ),
-            ligth: device
-                .create_texture(&texture_desc)
-                .create_view(&wgpu::TextureViewDescriptor {
+            ligth: ctx.device.create_texture(&texture_desc).create_view(
+                &wgpu::TextureViewDescriptor {
                     label: Some("Ligth texture"),
                     ..Default::default()
-                }),
-            ligth_depth: device
+                },
+            ),
+            ligth_depth: ctx
+                .device
                 .create_texture(&wgpu::TextureDescriptor {
                     label: Some("Ligth depth texture description"),
                     size,
@@ -172,24 +184,23 @@ impl LigthTextures {
 }
 
 impl LigthPipeline {
-    pub fn new(device: &wgpu::Device, width: u32, height: u32) -> Self {
-        let textures = LigthTextures::new(device, width, height);
+    pub fn new(ctx: &WgpuContext, width: u32, height: u32) -> Self {
+        let textures = LigthTextures::new(ctx, width, height);
         Self { textures }
     }
 
-    pub fn resize(&mut self, device: &wgpu::Device, width: u32, height: u32) {
-        self.textures = LigthTextures::new(device, width, height);
+    pub fn resize(&mut self, ctx: &WgpuContext, width: u32, height: u32) {
+        self.textures = LigthTextures::new(ctx, width, height);
     }
 
     pub fn start_frame<'a>(
         &'a mut self,
-        device: &'a wgpu::Device,
-        queue: &'a wgpu::Queue,
+        ctx: &'a WgpuContext,
         output_view: &'a wgpu::TextureView,
     ) -> LigthFrame<'a> {
         LigthFrame {
-            encoders: Encoders::new(device),
-            queue,
+            encoders: Encoders::new(ctx),
+            context: ctx,
             output_view,
             ligth_pipeline: self,
         }

@@ -1,6 +1,6 @@
 use crate::ligth_pipeline::{LigthRenderPass, LigthTextures};
-use crate::shader::*;
 use crate::uniform::*;
+use crate::{shader::*, WgpuContext};
 
 pub struct LigthShader {
     shader: Shader,
@@ -38,15 +38,15 @@ pub struct LigthUniform {
 }
 
 impl LigthShader {
-    pub fn new(device: &wgpu::Device, textures: &LigthTextures) -> Self {
+    pub fn new(ctx: &WgpuContext, textures: &LigthTextures) -> Self {
         let shader = Shader::new(
-            device,
+            ctx,
             ShaderDescriptor {
                 src: include_str!("ligth_shader.wgsl").into(),
                 textures: &[&textures.normal],
                 uniforms: &[
-                    &Uniform::new_layout(device, wgpu::ShaderStages::VERTEX),
-                    &Uniform::new_layout(device, wgpu::ShaderStages::VERTEX_FRAGMENT),
+                    &Uniform::new_layout(ctx, wgpu::ShaderStages::VERTEX),
+                    &Uniform::new_layout(ctx, wgpu::ShaderStages::VERTEX_FRAGMENT),
                 ],
                 vertex_layout: LigthInstance::desc(),
                 output_format: wgpu::TextureFormat::Rgb10a2Unorm,
@@ -70,8 +70,8 @@ impl LigthShader {
         Self { shader }
     }
 
-    pub fn resize(&mut self, device: &wgpu::Device, textures: &LigthTextures) {
-        self.shader.update_textures(device, &[&textures.normal])
+    pub fn resize(&mut self, ctx: &WgpuContext, textures: &LigthTextures) {
+        self.shader.update_textures(ctx, &[&textures.normal])
     }
 
     pub fn bind<'a>(&'a self, pass: &mut LigthRenderPass<'a>) {

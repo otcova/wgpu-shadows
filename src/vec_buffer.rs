@@ -1,5 +1,7 @@
 use wgpu::{util::DeviceExt, BufferAddress};
 
+use crate::WgpuContext;
+
 pub struct VecBuffer<T: bytemuck::NoUninit> {
     data: Vec<T>,
     buffer: wgpu::Buffer,
@@ -7,14 +9,16 @@ pub struct VecBuffer<T: bytemuck::NoUninit> {
 }
 
 impl<T: bytemuck::NoUninit> VecBuffer<T> {
-    pub fn new(device: &wgpu::Device, usage: wgpu::BufferUsages) -> Self {
+    pub fn new(ctx: &WgpuContext, usage: wgpu::BufferUsages) -> Self {
         Self {
             data: vec![],
-            buffer: device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                label: Some("Vec buffer"),
-                contents: &[],
-                usage,
-            }),
+            buffer: ctx
+                .device
+                .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                    label: Some("Vec buffer"),
+                    contents: &[],
+                    usage,
+                }),
             update_index: None,
         }
     }
@@ -30,11 +34,7 @@ impl<T: bytemuck::NoUninit> VecBuffer<T> {
         self.data.len()
     }
 
-    pub fn view(
-        &mut self,
-        device: &wgpu::Device,
-        queue: &wgpu::Queue,
-    ) -> Option<wgpu::BufferSlice> {
+    pub fn view(&mut self, ctx: &WgpuContext) -> Option<wgpu::BufferSlice> {
         if self.data.is_empty() {
             return None;
         }
@@ -44,14 +44,16 @@ impl<T: bytemuck::NoUninit> VecBuffer<T> {
         if let Some(update_index) = self.update_index {
             if self.buffer.size() < data_size {
                 // Realocate Buffer
-                self.buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                    label: Some("Vec buffer"),
-                    contents: bytemuck::cast_slice(&self.data[..]),
-                    usage: self.buffer.usage(),
-                });
+                self.buffer = ctx
+                    .device
+                    .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                        label: Some("Vec buffer"),
+                        contents: bytemuck::cast_slice(&self.data[..]),
+                        usage: self.buffer.usage(),
+                    });
             } else {
                 // Update Buffer
-                queue.write_buffer(
+                ctx.queue.write_buffer(
                     &self.buffer,
                     (update_index * std::mem::size_of::<T>()) as BufferAddress,
                     bytemuck::cast_slice(&self.data[update_index..]),
