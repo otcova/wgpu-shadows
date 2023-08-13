@@ -1,10 +1,11 @@
 use crate::ligth_pipeline::{LigthRenderPass, LigthTextures};
-use crate::shader::{Shader, ShaderDescriptor};
-use crate::texture_atlas::TextureAtlas;
+use crate::shaders::{Shader, ShaderDescriptor};
+use crate::texture_atlas::{TextureAtlas, TextureAtlasView};
 use crate::uniform::Uniform;
 use crate::{error::*, WgpuContext};
 
 pub struct QuadShader {
+    color: Shader,
     diffuse: Shader,
     normal: Shader,
     atlas: TextureAtlas,
@@ -36,6 +37,17 @@ impl QuadInstance {
             attributes: &Self::ATTRIBS,
         }
     }
+
+    pub fn new(pos: [f32; 2], width: f32, texture: TextureAtlasView) -> Self {
+        let ratio = texture.pixel_size[1] as f32 / texture.pixel_size[1] as f32;
+        Self {
+            pos,
+            size: [width, width * ratio],
+            angle: 0.,
+            tex_pos: texture.pos,
+            tex_size: texture.size,
+        }
+    }
 }
 
 impl QuadShader {
@@ -45,7 +57,7 @@ impl QuadShader {
         let normal = Shader::new(
             ctx,
             ShaderDescriptor {
-                src: include_str!("normal_shader.wgsl").into(),
+                src: include_str!("quad_normal.wgsl").into(),
                 textures: &[&atlas.normal_textures[0].view],
                 uniforms: &[&Uniform::new_layout(ctx, wgpu::ShaderStages::VERTEX)],
                 vertex_layout: QuadInstance::desc(),
@@ -58,7 +70,24 @@ impl QuadShader {
         let diffuse = Shader::new(
             ctx,
             ShaderDescriptor {
-                src: include_str!("diffuse_shader.wgsl").into(),
+                src: include_str!("quad_diffuse.wgsl").into(),
+                textures: &[
+                    &ligth_textures.ligth,
+                    &atlas.diffuse_textures[0].view,
+                    &atlas.normal_textures[0].view,
+                ],
+                uniforms: &[&Uniform::new_layout(ctx, wgpu::ShaderStages::VERTEX)],
+                vertex_layout: QuadInstance::desc(),
+                output_format: wgpu::TextureFormat::Bgra8Unorm,
+                blend: wgpu::BlendState::ALPHA_BLENDING,
+                depth_stencil: None,
+            },
+        );
+
+        let color = Shader::new(
+            ctx,
+            ShaderDescriptor {
+                src: include_str!("quad.wgsl").into(),
                 textures: &[
                     &ligth_textures.ligth,
                     &atlas.diffuse_textures[0].view,
@@ -75,6 +104,7 @@ impl QuadShader {
         Ok(Self {
             normal,
             diffuse,
+            color,
             atlas,
         })
     }
@@ -90,8 +120,12 @@ impl QuadShader {
         );
     }
 
-    pub fn bind<'a>(&'a self, pass: &mut LigthRenderPass<'a>) {
+    pub fn bind_ligth<'a>(&'a self, pass: &mut LigthRenderPass<'a>) {
         self.normal.bind(&mut pass.normal);
         self.diffuse.bind(&mut pass.diffuse);
+    }
+
+    pub fn bind<'a>(&'a self, pass: &mut LigthRenderPass<'a>) {
+        self.color.bind(&mut pass.diffuse);
     }
 }

@@ -3,6 +3,7 @@ name = "graphy"
 version = "0.1.0"
 edition = "2021"
 resolver = "2"
+build = "build/mod.rs"
 
 ##########################
 ### Build Dependencies ###
@@ -11,6 +12,7 @@ resolver = "2"
 [build-dependencies]
 indoc = "2"
 webp = "0.2"
+svg = "0.13.1"
 
 [build-dependencies.image]
 version = "0.24"

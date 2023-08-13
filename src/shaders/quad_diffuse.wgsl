@@ -33,7 +33,7 @@ fn vs_main(
 
     let coord = quad_mesh(model.vertex_index);
 
-    out.tex_coords = coord * model.tex_size + model.tex_pos;
+    out.tex_coords = vec2(coord.x, 1. - coord.y) * model.tex_size + model.tex_pos;
     
     let c = cos(model.angle);
     let s = sin(model.angle);

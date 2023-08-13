@@ -37,6 +37,7 @@ impl TextureAtlas {
         })
     }
 
+    #[allow(dead_code)]
     pub fn view_bow_charge_0() -> TextureAtlasView {
         TextureAtlasView {
             pos: [0.54827845f32, 0f32],
@@ -44,20 +45,15 @@ impl TextureAtlas {
             pixel_size: [106u32, 331u32],
         }
     }
-    pub fn view_arrow() -> TextureAtlasView {
+    #[allow(dead_code)]
+    pub fn view_block_sq2() -> TextureAtlasView {
         TextureAtlasView {
-            pos: [0f32, 0f32],
-            size: [0.061002996f32, 0.15625f32],
-            pixel_size: [163u32, 80u32],
-        }
-    }
-    pub fn view_block_sq3() -> TextureAtlasView {
-        TextureAtlasView {
-            pos: [0.2020958f32, 0f32],
+            pos: [0.061377246f32, 0f32],
             size: [0.1403443f32, 0.7324219f32],
             pixel_size: [375u32, 375u32],
         }
     }
+    #[allow(dead_code)]
     pub fn view_bow() -> TextureAtlasView {
         TextureAtlasView {
             pos: [0.48353294f32, 0f32],
@@ -65,13 +61,15 @@ impl TextureAtlas {
             pixel_size: [172u32, 270u32],
         }
     }
-    pub fn view_block_sq4() -> TextureAtlasView {
+    #[allow(dead_code)]
+    pub fn view_block_sq3() -> TextureAtlasView {
         TextureAtlasView {
-            pos: [0.3428144f32, 0f32],
+            pos: [0.2020958f32, 0f32],
             size: [0.1403443f32, 0.7324219f32],
             pixel_size: [375u32, 375u32],
         }
     }
+    #[allow(dead_code)]
     pub fn view_bow_charge_1() -> TextureAtlasView {
         TextureAtlasView {
             pos: [0.58832335f32, 0f32],
@@ -79,6 +77,15 @@ impl TextureAtlas {
             pixel_size: [75u32, 399u32],
         }
     }
+    #[allow(dead_code)]
+    pub fn view_arrow() -> TextureAtlasView {
+        TextureAtlasView {
+            pos: [0f32, 0f32],
+            size: [0.061002996f32, 0.15625f32],
+            pixel_size: [163u32, 80u32],
+        }
+    }
+    #[allow(dead_code)]
     pub fn view_triangles() -> TextureAtlasView {
         TextureAtlasView {
             pos: [0.61676645f32, 0f32],
@@ -86,9 +93,10 @@ impl TextureAtlas {
             pixel_size: [1024u32, 512u32],
         }
     }
-    pub fn view_block_sq2() -> TextureAtlasView {
+    #[allow(dead_code)]
+    pub fn view_block_sq4() -> TextureAtlasView {
         TextureAtlasView {
-            pos: [0.061377246f32, 0f32],
+            pos: [0.3428144f32, 0f32],
             size: [0.1403443f32, 0.7324219f32],
             pixel_size: [375u32, 375u32],
         }

@@ -9,6 +9,38 @@ pub struct Uniform {
     buffer: wgpu::Buffer,
 }
 
+pub struct CachedUniform<T: NoUninit> {
+    uniform: Uniform,
+    pub data: T,
+    pub needs_update: bool,
+}
+
+impl<T: NoUninit> CachedUniform<T> {
+    pub fn new(ctx: &WgpuContext, visibility: wgpu::ShaderStages, data: T) -> Self {
+        Self {
+            uniform: Uniform::new(ctx, visibility, &data),
+            data,
+            needs_update: false,
+        }
+    }
+
+    pub fn update(&mut self, data: T) {
+        self.data = data;
+        self.needs_update = true;
+    }
+
+    pub fn update_buffers(&mut self, ctx: &WgpuContext) {
+        if self.needs_update {
+            self.uniform.update_buffer(ctx, &self.data);
+            self.needs_update = false;
+        }
+    }
+
+    pub fn bind<'a>(&'a self, group: u32, pass: &mut wgpu::RenderPass<'a>) {
+        self.uniform.bind(group, pass);
+    }
+}
+
 impl Uniform {
     pub fn new<T: NoUninit>(ctx: &WgpuContext, visibility: wgpu::ShaderStages, data: &T) -> Self {
         let buffer = ctx

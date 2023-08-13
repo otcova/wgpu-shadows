@@ -17,7 +17,7 @@ impl<T: bytemuck::NoUninit> VecBuffer<T> {
                 .create_buffer_init(&wgpu::util::BufferInitDescriptor {
                     label: Some("Vec buffer"),
                     contents: &[],
-                    usage,
+                    usage: usage | wgpu::BufferUsages::COPY_DST,
                 }),
             update_range: None,
         }
@@ -43,6 +43,11 @@ impl<T: bytemuck::NoUninit> VecBuffer<T> {
         } else {
             self.update_range = Some(end - 1..end);
         }
+    }
+
+    pub fn clear(&mut self) {
+        self.data.clear();
+        self.update_range = Some(0..1);
     }
 
     pub fn len(&self) -> usize {

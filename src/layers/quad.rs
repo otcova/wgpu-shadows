@@ -1,10 +1,10 @@
 use crate::ligth_pipeline::LigthRenderPass;
-use crate::quad_shader::QuadInstance;
+use crate::shaders::QuadInstance;
 use crate::vec_buffer::VecBuffer;
 use crate::WgpuContext;
 
 pub struct QuadLayer {
-    buffer: VecBuffer<QuadInstance>,
+    pub buffer: VecBuffer<QuadInstance>,
 }
 
 impl QuadLayer {
@@ -12,10 +12,6 @@ impl QuadLayer {
         Self {
             buffer: VecBuffer::new(ctx, wgpu::BufferUsages::VERTEX),
         }
-    }
-
-    pub fn push(&mut self, quad: QuadInstance) {
-        self.buffer.push(quad);
     }
 
     pub fn draw<'a>(&'a mut self, pass: &mut LigthRenderPass<'a>) {

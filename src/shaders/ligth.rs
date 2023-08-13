@@ -1,6 +1,7 @@
 use crate::ligth_pipeline::{LigthRenderPass, LigthTextures};
+use crate::shaders::*;
 use crate::uniform::*;
-use crate::{shader::*, WgpuContext};
+use crate::WgpuContext;
 
 pub struct LigthShader {
     shader: Shader,
@@ -40,7 +41,7 @@ impl LigthShader {
         let shader = Shader::new(
             ctx,
             ShaderDescriptor {
-                src: include_str!("ligth_shader.wgsl").into(),
+                src: include_str!("ligth.wgsl").into(),
                 textures: &[&textures.normal],
                 uniforms: &[
                     &Uniform::new_layout(ctx, wgpu::ShaderStages::VERTEX),

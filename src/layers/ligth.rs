@@ -1,5 +1,5 @@
 use crate::ligth_pipeline::LigthRenderPass;
-use crate::ligth_shader::{LigthUniform, ShadowInstance};
+use crate::shaders::{LigthUniform, ShadowInstance};
 use crate::uniform::Uniform;
 use crate::vec_buffer::VecBuffer;
 use crate::WgpuContext;
@@ -21,6 +21,11 @@ impl LigthLayer {
         }
     }
 
+    pub fn clear_shadows(&mut self) {
+        self.shadows.clear();
+        self.shadows.push(ShadowInstance::default());
+    }
+
     pub fn add_shadow(&mut self, shadow: ShadowInstance) {
         *self.shadows.get_mut(self.shadows.len() - 1) = shadow;
         self.shadows.push(ShadowInstance::default());
@@ -36,6 +41,10 @@ impl LigthLayer {
 
     pub fn draw<'a>(&'a mut self, pass: &mut LigthRenderPass<'a>) {
         let shadows_len = self.shadows.len() as u32;
+
+        let idx = shadows_len - 1;
+        self.ligth_index.update_buffer(pass.context, &idx);
+
         let buffer = self.shadows.view(pass.context).unwrap();
 
         pass.ligth.set_vertex_buffer(0, buffer);

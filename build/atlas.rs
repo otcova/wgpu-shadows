@@ -108,6 +108,7 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
             let h = (pixel_h as f32) / page_h;
 
             texture_views += &formatdoc! {"
+                #[allow(dead_code)]
                 pub fn view_{name}() -> TextureAtlasView {{
                     TextureAtlasView {{
                         pos: [{x}f32, {y}f32],
@@ -182,7 +183,7 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
     fs::write("src/texture_atlas.rs", texture_atlas_src).unwrap();
 }
 
-fn main() {
+pub fn main() {
     let mut diffuse = MultiTexturePacker::new_skyline(ATLAS_CONFIG);
     let mut normal = MultiTexturePacker::new_skyline(ATLAS_CONFIG);
 

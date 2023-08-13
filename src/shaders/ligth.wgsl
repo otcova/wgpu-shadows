@@ -42,7 +42,7 @@ fn vs_main(model: VertexInput) -> VertexOutput {
         out.ligth = 1.;
         out.pos = quad_mesh(model.vertex_index) - 1.;
     } else  {
-        let shadow_size = 10.;
+        let shadow_size = 100.;
                
         out.pos = select(model.a, model.b, vec2<bool>((model.vertex_index & 1u) == 0u));
         
@@ -69,7 +69,8 @@ fn decode_u32_color() -> vec3<f32> {
     let b = color & 0x3FFu;
     let g = (color >> 10u) & 0x3FFu;
     let r = color >> 20u;
-    return vec3(f32(r), f32(g), f32(b)) / 255.;
+    let col = vec3(f32(r), f32(g), f32(b)) / 255.;
+    return col * col;
 }
 
 @fragment
