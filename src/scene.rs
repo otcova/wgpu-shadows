@@ -103,8 +103,6 @@ impl MouseEventHandler for Scene {
 
         let ligth = self.layers.ligths.get_ligth_mut(self.ligth);
         ligth.data.pos = -pos;
-        let c = (100. * (pos.x + 1.5)).max(0.) as u16;
-        ligth.data.color = LigthUniform::color(c, c, c);
         ligth.needs_update = true;
     }
 }
