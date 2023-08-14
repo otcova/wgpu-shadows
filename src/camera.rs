@@ -1,7 +1,7 @@
-use crate::ligth_pipeline::LigthRenderPass;
-use crate::mouse::MouseTransform;
-use crate::uniform::CachedUniform;
-use crate::{Vec2, WgpuContext};
+use crate::ligth_pipeline::*;
+use crate::math::*;
+use crate::mouse::*;
+use crate::wgpu_components::*;
 
 pub struct Camera {
     uniform: CachedUniform<CameraUniform>,

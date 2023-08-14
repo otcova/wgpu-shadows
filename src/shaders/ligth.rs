@@ -1,8 +1,6 @@
-use crate::ligth_pipeline::{LigthRenderPass, LigthTextures};
-use crate::math::Vec2;
-use crate::shaders::*;
-use crate::uniform::*;
-use crate::WgpuContext;
+use crate::ligth_pipeline::*;
+use crate::math::*;
+use crate::wgpu_components::*;
 
 pub struct LigthShader {
     shader: Shader,

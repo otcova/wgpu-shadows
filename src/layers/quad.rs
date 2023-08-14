@@ -1,7 +1,6 @@
-use crate::ligth_pipeline::LigthRenderPass;
-use crate::shaders::QuadInstance;
-use crate::vec_buffer::VecBuffer;
-use crate::WgpuContext;
+use crate::ligth_pipeline::*;
+use crate::shaders::*;
+use crate::wgpu_components::*;
 
 pub struct QuadLayer {
     pub buffer: VecBuffer<QuadInstance>,

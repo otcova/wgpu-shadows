@@ -1,4 +1,4 @@
-use crate::Vec2;
+use crate::math::*;
 use winit::event::WindowEvent;
 
 pub struct Mouse {

@@ -1,9 +1,8 @@
-use crate::ligth_pipeline::{LigthRenderPass, LigthTextures};
-use crate::math::Vec2;
-use crate::shaders::{Shader, ShaderDescriptor};
-use crate::texture_atlas::{TextureAtlas, TextureAtlasView};
-use crate::uniform::Uniform;
-use crate::{error::*, WgpuContext};
+use crate::error::*;
+use crate::ligth_pipeline::*;
+use crate::math::*;
+use crate::texture_atlas::*;
+use crate::wgpu_components::*;
 
 pub struct QuadShader {
     color: Shader,

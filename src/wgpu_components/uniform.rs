@@ -1,7 +1,6 @@
+use crate::wgpu_components::*;
 use bytemuck::NoUninit;
 use wgpu::util::DeviceExt;
-
-use crate::WgpuContext;
 
 pub struct Uniform {
     pub layout: wgpu::BindGroupLayout,

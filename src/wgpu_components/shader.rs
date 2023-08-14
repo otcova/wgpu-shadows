@@ -1,4 +1,4 @@
-use crate::{texture::Texture, WgpuContext};
+use crate::wgpu_components::*;
 use std::borrow::Cow;
 
 pub struct Shader {

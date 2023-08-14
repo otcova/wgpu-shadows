@@ -1,4 +1,4 @@
-use crate::WgpuContext;
+use crate::wgpu_components::*;
 
 pub struct LigthTextures {
     pub normal: wgpu::TextureView,

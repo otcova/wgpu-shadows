@@ -1,12 +1,10 @@
 mod ligth;
 mod quad;
-mod shader;
 
 pub use ligth::*;
 pub use quad::*;
 
 use crate::{error::ErrResult, ligth_pipeline::LigthTextures, WgpuContext};
-use shader::*;
 
 pub struct Shaders {
     pub quad: QuadShader,

@@ -1,8 +1,6 @@
-use crate::ligth_pipeline::LigthRenderPass;
-use crate::shaders::{LigthUniform, ShadowInstance};
-use crate::uniform::{CachedUniform, Uniform};
-use crate::vec_buffer::VecBuffer;
-use crate::WgpuContext;
+use crate::ligth_pipeline::*;
+use crate::shaders::*;
+use crate::wgpu_components::*;
 
 pub struct LigthLayer {
     ligth_index: Uniform,

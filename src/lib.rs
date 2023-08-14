@@ -11,28 +11,19 @@ mod scene;
 mod scene_manager;
 mod shaders;
 mod shapes;
-mod texture;
 mod texture_atlas;
-mod uniform;
-mod vec_buffer;
+mod wgpu_components;
 
-use camera::Camera;
-use math::*;
-
-use error::*;
-use scene_manager::*;
+use error::ErrResult;
+use scene_manager::SceneManager;
 use smaa::{SmaaMode, SmaaTarget};
+use wgpu_components::WgpuContext;
 use winit::{
     dpi::LogicalSize,
     event::*,
     event_loop::{ControlFlow, EventLoop},
     window::{Window, WindowBuilder},
 };
-
-pub struct WgpuContext {
-    pub device: wgpu::Device,
-    pub queue: wgpu::Queue,
-}
 
 struct State {
     surface: wgpu::Surface,

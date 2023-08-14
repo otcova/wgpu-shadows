@@ -1,11 +1,12 @@
-use crate::layers::{LigthLayer, QuadLayer};
-use crate::ligth_pipeline::LigthRenderPass;
-use crate::math::Vec2;
-use crate::mouse::{Mouse, MouseEventHandler};
-use crate::objects::BlockSq2;
-use crate::texture_atlas::TextureAtlas;
-use crate::{shaders::*, shapes};
-use crate::{Camera, WgpuContext};
+use crate::camera::*;
+use crate::layers::*;
+use crate::ligth_pipeline::*;
+use crate::math::*;
+use crate::mouse::*;
+use crate::objects::*;
+use crate::shaders::*;
+use crate::texture_atlas::*;
+use crate::wgpu_components::*;
 
 struct SceneLayers {
     background: QuadLayer,
@@ -50,7 +51,8 @@ impl Scene {
             .ligths
             .add_ligth(ctx, LigthUniform::new(Vec2::zero(), 0.2, 10, 50, 130));
 
-        let block = BlockSq2::new(&mut layers.blocks, &mut layers.ligths);
+        BlockSq3::new(&mut layers.blocks, &mut layers.ligths, Vec2::new(0., 0.4));
+        let block = BlockSq2::new(&mut layers.blocks, &mut layers.ligths, Vec2::zero());
 
         Self {
             layers,
@@ -83,7 +85,7 @@ impl Scene {
         self.layers.players.draw(pass);
 
         shaders.quad.bind(pass);
-        self.layers.blocks.draw(pass);
+        // self.layers.blocks.draw(pass);
         self.layers.top_particles.draw(pass);
 
         self.frame_camera.bind(pass);
