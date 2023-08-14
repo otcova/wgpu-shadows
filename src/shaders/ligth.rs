@@ -35,7 +35,22 @@ impl ShadowInstance {
 pub struct LigthUniform {
     pub pos: Vec2,
     pub z_index: f32,
-    pub ligth_color: u32,
+    pub color: u32,
+}
+
+impl LigthUniform {
+    pub fn new(pos: Vec2, z_index: f32, r: u16, g: u16, b: u16) -> Self {
+        let r = (r & 0x3FF) as u32;
+        let g = (g & 0x3FF) as u32;
+        let b = (b & 0x3FF) as u32;
+        let color = (r << 20) | (g << 10) | b;
+
+        Self {
+            pos,
+            z_index,
+            color,
+        }
+    }
 }
 
 impl LigthShader {

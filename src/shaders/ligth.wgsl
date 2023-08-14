@@ -87,7 +87,8 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
          let normal = normalize(normal_color * 2. - 1.);
          let angle_attenuation = max(0., dot(dist_vec / dist, normal));
 
-         let falloff = vec3(0.75, 3., 20.);
+         // let falloff = vec3(0.75, 3., 20.);
+         let falloff = vec3(1., 1., 10.);
          let dist_attenuation = 1. / (falloff.x + falloff.y * dist + falloff.z * sq_dist);
 
          let final_color = angle_attenuation * dist_attenuation * ligth_color;

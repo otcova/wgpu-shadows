@@ -49,13 +49,13 @@ fn pack_images<'a>(
         let norm_image = match ImageImporter::import_from_file(&path) {
             Ok(norm_image) => norm_image,
             // Create a normal default normal image
-            Err(_) => DynamicImage::ImageRgba8(
+            Err(err) if err.starts_with("The system cannot find") => DynamicImage::ImageRgba8(
                 ImageBuffer::from_vec(
                     image.width(),
                     image.height(),
                     image
-                        .as_rgba8()
-                        .unwrap()
+                        .clone()
+                        .into_rgba8()
                         .as_raw()
                         .chunks_exact(4)
                         .flat_map(|data| [128, 128, 255, data[3]])
@@ -63,6 +63,7 @@ fn pack_images<'a>(
                 )
                 .unwrap(),
             ),
+            Err(err) => panic!("{:?}", err),
         };
         normal_pack.pack_own(name.clone(), norm_image).unwrap();
 

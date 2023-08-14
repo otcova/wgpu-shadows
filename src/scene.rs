@@ -46,14 +46,9 @@ impl Scene {
             TextureAtlas::view_triangles(),
         ));
 
-        let ligth = layers.ligths.add_ligth(
-            ctx,
-            LigthUniform {
-                pos: Vec2::zero(),
-                z_index: 0.2,
-                ligth_color: 0x3FFFFFFF,
-            },
-        );
+        let ligth = layers
+            .ligths
+            .add_ligth(ctx, LigthUniform::new(Vec2::zero(), 0.2, 10, 50, 130));
 
         let block = BlockSq2::new(&mut layers.blocks, &mut layers.ligths);
 
@@ -107,20 +102,5 @@ impl MouseEventHandler for Scene {
         let ligth = self.layers.ligths.get_ligth_mut(self.ligth);
         ligth.data.pos = -pos;
         ligth.needs_update = true;
-
-        // self.layers.boxes.buffer.clear();
-        // self.layers.boxes.buffer.push(QuadInstance::new(
-        //     [pos.x, pos.y],
-        //     0.3,
-        //     TextureAtlas::view_block_sq3(),
-        // ));
-
-        // self.layers.ligths.clear_shadows();
-
-        // for wind in shapes::BLOCK_SQ3.windows(2) {
-        //     let a = [pos.x + wind[0][0] * 0.3, pos.y + wind[0][1] * 0.3];
-        //     let b = [pos.x + wind[1][0] * 0.3, pos.y + wind[1][1] * 0.3];
-        //     self.layers.ligths.add_shadow(ShadowInstance { a, b });
-        // }
     }
 }
