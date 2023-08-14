@@ -38,16 +38,18 @@ pub struct LigthUniform {
 
 impl LigthUniform {
     pub fn new(pos: Vec2, z_index: f32, r: u16, g: u16, b: u16) -> Self {
-        let r = (r & 0x3FF) as u32;
-        let g = (g & 0x3FF) as u32;
-        let b = (b & 0x3FF) as u32;
-        let color = (r << 20) | (g << 10) | b;
-
         Self {
             pos,
             z_index,
-            color,
+            color: Self::color(r, g, b),
         }
+    }
+
+    pub fn color(r: u16, g: u16, b: u16) -> u32 {
+        let r = (r & 0x3FF) as u32;
+        let g = (g & 0x3FF) as u32;
+        let b = (b & 0x3FF) as u32;
+        (r << 20) | (g << 10) | b
     }
 }
 

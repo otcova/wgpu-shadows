@@ -49,7 +49,7 @@ impl Scene {
 
         let ligth = layers
             .ligths
-            .add_ligth(ctx, LigthUniform::new(Vec2::zero(), 0.2, 10, 50, 130));
+            .add_ligth(ctx, Vec2::zero(), LigthUniform::color(50, 50, 50));
 
         BlockSq3::new(&mut layers.blocks, &mut layers.ligths, Vec2::new(0., 0.4));
         let block = BlockSq2::new(&mut layers.blocks, &mut layers.ligths, Vec2::zero());
@@ -85,7 +85,7 @@ impl Scene {
         self.layers.players.draw(pass);
 
         shaders.quad.bind(pass);
-        // self.layers.blocks.draw(pass);
+        self.layers.blocks.draw(pass);
         self.layers.top_particles.draw(pass);
 
         self.frame_camera.bind(pass);
@@ -103,6 +103,8 @@ impl MouseEventHandler for Scene {
 
         let ligth = self.layers.ligths.get_ligth_mut(self.ligth);
         ligth.data.pos = -pos;
+        let c = (100. * (pos.x + 1.5)).max(0.) as u16;
+        ligth.data.color = LigthUniform::color(c, c, c);
         ligth.needs_update = true;
     }
 }

@@ -77,22 +77,22 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let normal_color = textureSample(normal_tex, tex_sampler, in.screen_pos * vec2(0.5, -0.5) + 0.5).rgb;
         
     if in.ligth > 0. {
-         let ligth_pos = vec3(ligth.pos.xy, 0.5);
-         let ligth_color = decode_u32_color();
+        let ligth_pos = vec3(ligth.pos.xy, 0.5);
+        let ligth_color = decode_u32_color();
 
-         let dist_vec = ligth_pos - vec3(in.pos, 0.);
-         let sq_dist = dot(dist_vec, dist_vec);
-         let dist = sqrt(sq_dist);
+        let dist_vec = ligth_pos - vec3(in.pos, 0.);
+        let sq_dist = dot(dist_vec, dist_vec);
+        let dist = sqrt(sq_dist);
 
-         let normal = normalize(normal_color * 2. - 1.);
-         let angle_attenuation = max(0., dot(dist_vec / dist, normal));
+        let normal = normalize(normal_color * 2. - 1.);
+        let angle_attenuation = max(0., dot(dist_vec / dist, normal));
 
-         // let falloff = vec3(0.75, 3., 20.);
-         let falloff = vec3(1., 1., 10.);
-         let dist_attenuation = 1. / (falloff.x + falloff.y * dist + falloff.z * sq_dist);
+        // let falloff = vec3(0.75, 3., 20.);
+        // let dist_attenuation = 1. / (falloff.x + falloff.y * dist + falloff.z * sq_dist);
+        let dist_attenuation = 1. / (1. + sq_dist);
 
-         let final_color = angle_attenuation * dist_attenuation * ligth_color;
-         return vec4(final_color / 4., 1.);
+        let final_color = angle_attenuation * dist_attenuation * ligth_color;
+        return vec4((final_color / 4.), 1.);
     }
     return vec4(0.);
 }

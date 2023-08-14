@@ -6,7 +6,7 @@ use crate::shapes::*;
 use crate::texture_atlas::*;
 
 macro_rules! block_object {
-    ($Struct:ident, $SHAPE:ident) => {
+    ($Struct:ident, $SHAPE:ident, $image:ident) => {
         pub struct $Struct {
             quad_id: usize,
             shadow_id: [usize; $SHAPE.len()],
@@ -19,7 +19,7 @@ macro_rules! block_object {
                 let quad_id =
                     layer
                         .buffer
-                        .push(QuadInstance::new(pos, size, TextureAtlas::view_block_sq2()));
+                        .push(QuadInstance::new(pos, size, TextureAtlas::$image()));
 
                 let mut shadow_id = [0; $SHAPE.len()];
 
@@ -46,5 +46,5 @@ macro_rules! block_object {
     };
 }
 
-block_object!(BlockSq2, BLOCK_SQ2);
-block_object!(BlockSq3, BLOCK_SQ3);
+block_object!(BlockSq2, BLOCK_SQ2, view_block_sq2);
+block_object!(BlockSq3, BLOCK_SQ3, view_block_sq3);

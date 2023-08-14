@@ -69,7 +69,10 @@ fn grayscale(color: vec3<f32>) -> f32 {
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
-    let ligth = textureSample(ligth_tex, tex_sampler, in.pos).rgb * 4.;
+    let ligth_enc = textureSample(ligth_tex, tex_sampler, in.pos).rgb;
+    // let ligth = ligth_enc * 4.;
+    let ligth = ligth_enc * ligth_enc * 8.;
+    
 
     let l = vec4(ligth, grayscale(ligth));
     let w1 = max(vec4(0.), 4. * (l - l * l));

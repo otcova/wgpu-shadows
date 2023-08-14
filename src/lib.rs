@@ -1,4 +1,4 @@
-#![feature(concat_idents, float_next_up_down)]
+#![feature(float_next_up_down)]
 
 mod camera;
 mod error;

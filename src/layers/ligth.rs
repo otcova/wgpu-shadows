@@ -1,4 +1,5 @@
 use crate::ligth_pipeline::*;
+use crate::math::*;
 use crate::shaders::*;
 use crate::wgpu_components::*;
 
@@ -34,11 +35,22 @@ impl LigthLayer {
         &mut self.ligths[index]
     }
 
-    pub fn add_ligth(&mut self, ctx: &WgpuContext, ligth: LigthUniform) -> usize {
+    pub fn add_ligth(&mut self, ctx: &WgpuContext, pos: Vec2, color: u32) -> usize {
+        let z_index = self
+            .ligths
+            .last()
+            .map(|ligth| ligth.data.z_index)
+            .unwrap_or(1.)
+            .next_down();
+
         self.ligths.push(CachedUniform::new(
             ctx,
             wgpu::ShaderStages::VERTEX_FRAGMENT,
-            ligth,
+            LigthUniform {
+                pos,
+                z_index,
+                color,
+            },
         ));
         self.ligths.len() - 1
     }
