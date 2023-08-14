@@ -3,7 +3,7 @@
 
 use crate::error::ErrResult;
 use crate::texture::Texture;
-use crate::WgpuContext;
+use crate::{Vec2, WgpuContext};
 
 pub struct TextureAtlas {
     pub diffuse_textures: [Texture; 1],
@@ -12,8 +12,8 @@ pub struct TextureAtlas {
 
 #[derive(Copy, Clone)]
 pub struct TextureAtlasView {
-    pub pos: [f32; 2],
-    pub size: [f32; 2],
+    pub pos: Vec2,
+    pub size: Vec2,
     pub pixel_size: [u32; 2],
 }
 
@@ -38,67 +38,67 @@ impl TextureAtlas {
     }
 
     #[allow(dead_code)]
-    pub fn view_bow_charge_0() -> TextureAtlasView {
-        TextureAtlasView {
-            pos: [0.54827845f32, 0f32],
-            size: [0.039670657f32, 0.6464844f32],
-            pixel_size: [106u32, 331u32],
-        }
-    }
-    #[allow(dead_code)]
-    pub fn view_block_sq2() -> TextureAtlasView {
-        TextureAtlasView {
-            pos: [0.061377246f32, 0f32],
-            size: [0.1403443f32, 0.7324219f32],
-            pixel_size: [375u32, 375u32],
-        }
-    }
-    #[allow(dead_code)]
-    pub fn view_bow() -> TextureAtlasView {
-        TextureAtlasView {
-            pos: [0.48353294f32, 0f32],
-            size: [0.06437126f32, 0.52734375f32],
-            pixel_size: [172u32, 270u32],
-        }
-    }
-    #[allow(dead_code)]
     pub fn view_block_sq3() -> TextureAtlasView {
         TextureAtlasView {
-            pos: [0.2020958f32, 0f32],
-            size: [0.1403443f32, 0.7324219f32],
+            pos: Vec2::new(0.2020958f32, 0f32),
+            size: Vec2::new(0.1403443f32, 0.7324219f32),
             pixel_size: [375u32, 375u32],
         }
     }
     #[allow(dead_code)]
     pub fn view_bow_charge_1() -> TextureAtlasView {
         TextureAtlasView {
-            pos: [0.58832335f32, 0f32],
-            size: [0.028068863f32, 0.7792969f32],
+            pos: Vec2::new(0.58832335f32, 0f32),
+            size: Vec2::new(0.028068863f32, 0.7792969f32),
             pixel_size: [75u32, 399u32],
-        }
-    }
-    #[allow(dead_code)]
-    pub fn view_arrow() -> TextureAtlasView {
-        TextureAtlasView {
-            pos: [0f32, 0f32],
-            size: [0.061002996f32, 0.15625f32],
-            pixel_size: [163u32, 80u32],
-        }
-    }
-    #[allow(dead_code)]
-    pub fn view_triangles() -> TextureAtlasView {
-        TextureAtlasView {
-            pos: [0.61676645f32, 0f32],
-            size: [0.38323355f32, 1f32],
-            pixel_size: [1024u32, 512u32],
         }
     }
     #[allow(dead_code)]
     pub fn view_block_sq4() -> TextureAtlasView {
         TextureAtlasView {
-            pos: [0.3428144f32, 0f32],
-            size: [0.1403443f32, 0.7324219f32],
+            pos: Vec2::new(0.3428144f32, 0f32),
+            size: Vec2::new(0.1403443f32, 0.7324219f32),
             pixel_size: [375u32, 375u32],
+        }
+    }
+    #[allow(dead_code)]
+    pub fn view_arrow() -> TextureAtlasView {
+        TextureAtlasView {
+            pos: Vec2::new(0f32, 0f32),
+            size: Vec2::new(0.061002996f32, 0.15625f32),
+            pixel_size: [163u32, 80u32],
+        }
+    }
+    #[allow(dead_code)]
+    pub fn view_block_sq2() -> TextureAtlasView {
+        TextureAtlasView {
+            pos: Vec2::new(0.061377246f32, 0f32),
+            size: Vec2::new(0.1403443f32, 0.7324219f32),
+            pixel_size: [375u32, 375u32],
+        }
+    }
+    #[allow(dead_code)]
+    pub fn view_bow_charge_0() -> TextureAtlasView {
+        TextureAtlasView {
+            pos: Vec2::new(0.54827845f32, 0f32),
+            size: Vec2::new(0.039670657f32, 0.6464844f32),
+            pixel_size: [106u32, 331u32],
+        }
+    }
+    #[allow(dead_code)]
+    pub fn view_triangles() -> TextureAtlasView {
+        TextureAtlasView {
+            pos: Vec2::new(0.61676645f32, 0f32),
+            size: Vec2::new(0.38323355f32, 1f32),
+            pixel_size: [1024u32, 512u32],
+        }
+    }
+    #[allow(dead_code)]
+    pub fn view_bow() -> TextureAtlasView {
+        TextureAtlasView {
+            pos: Vec2::new(0.48353294f32, 0f32),
+            size: Vec2::new(0.06437126f32, 0.52734375f32),
+            pixel_size: [172u32, 270u32],
         }
     }
 }

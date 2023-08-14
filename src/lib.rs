@@ -6,6 +6,7 @@ mod layers;
 mod ligth_pipeline;
 mod math;
 mod mouse;
+mod objects;
 mod scene;
 mod scene_manager;
 mod shaders;

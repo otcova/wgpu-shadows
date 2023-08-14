@@ -1,12 +1,12 @@
 use crate::ligth_pipeline::LigthRenderPass;
 use crate::shaders::{LigthUniform, ShadowInstance};
-use crate::uniform::Uniform;
+use crate::uniform::{CachedUniform, Uniform};
 use crate::vec_buffer::VecBuffer;
 use crate::WgpuContext;
 
 pub struct LigthLayer {
     ligth_index: Uniform,
-    ligths: Vec<Uniform>,
+    ligths: Vec<CachedUniform<LigthUniform>>,
     shadows: VecBuffer<ShadowInstance>,
 }
 
@@ -21,22 +21,28 @@ impl LigthLayer {
         }
     }
 
-    pub fn clear_shadows(&mut self) {
-        self.shadows.clear();
-        self.shadows.push(ShadowInstance::default());
+    pub fn get_shadow_mut(&mut self, index: usize) -> &mut ShadowInstance {
+        self.shadows.get_mut(index)
     }
 
-    pub fn add_shadow(&mut self, shadow: ShadowInstance) {
-        *self.shadows.get_mut(self.shadows.len() - 1) = shadow;
+    pub fn add_shadow(&mut self, shadow: ShadowInstance) -> usize {
+        let index = self.shadows.len() - 1;
+        *self.shadows.get_mut(index) = shadow;
         self.shadows.push(ShadowInstance::default());
+        index
     }
 
-    pub fn add_ligth(&mut self, ctx: &WgpuContext, ligth: &LigthUniform) {
-        self.ligths.push(Uniform::new(
+    pub fn get_ligth_mut(&mut self, index: usize) -> &mut CachedUniform<LigthUniform> {
+        &mut self.ligths[index]
+    }
+
+    pub fn add_ligth(&mut self, ctx: &WgpuContext, ligth: LigthUniform) -> usize {
+        self.ligths.push(CachedUniform::new(
             ctx,
             wgpu::ShaderStages::VERTEX_FRAGMENT,
             ligth,
         ));
+        self.ligths.len() - 1
     }
 
     pub fn draw<'a>(&'a mut self, pass: &mut LigthRenderPass<'a>) {
@@ -50,7 +56,8 @@ impl LigthLayer {
         pass.ligth.set_vertex_buffer(0, buffer);
         self.ligth_index.bind(2, &mut pass.ligth);
 
-        for uniform in self.ligths.iter() {
+        for uniform in self.ligths.iter_mut() {
+            uniform.update_buffers(pass.context);
             uniform.bind(3, &mut pass.ligth);
             pass.ligth.draw(0..4, 0..shadows_len);
         }

@@ -2,6 +2,7 @@ use crate::layers::{LigthLayer, QuadLayer};
 use crate::ligth_pipeline::LigthRenderPass;
 use crate::math::Vec2;
 use crate::mouse::{Mouse, MouseEventHandler};
+use crate::objects::BlockSq2;
 use crate::texture_atlas::TextureAtlas;
 use crate::{shaders::*, shapes};
 use crate::{Camera, WgpuContext};
@@ -10,7 +11,7 @@ struct SceneLayers {
     background: QuadLayer,
     bottom_particles: QuadLayer,
     players: QuadLayer,
-    boxes: QuadLayer,
+    blocks: QuadLayer,
     top_particles: QuadLayer,
     frame: QuadLayer,
     ligths: LigthLayer,
@@ -20,39 +21,50 @@ pub struct Scene {
     layers: SceneLayers,
     game_camera: Camera,
     frame_camera: Camera,
+
+    block: BlockSq2,
+    ligth: usize,
 }
 
 impl Scene {
     pub fn new(ctx: &WgpuContext) -> Self {
-        let mut scene = Self {
-            layers: SceneLayers {
-                background: QuadLayer::new(ctx),
-                bottom_particles: QuadLayer::new(ctx),
-                players: QuadLayer::new(ctx),
-                boxes: QuadLayer::new(ctx),
-                top_particles: QuadLayer::new(ctx),
-                frame: QuadLayer::new(ctx),
-                ligths: LigthLayer::new(ctx),
-            },
-            game_camera: Camera::new(ctx),
-            frame_camera: Camera::new(ctx),
+        let mut layers = SceneLayers {
+            background: QuadLayer::new(ctx),
+            bottom_particles: QuadLayer::new(ctx),
+            players: QuadLayer::new(ctx),
+            blocks: QuadLayer::new(ctx),
+            top_particles: QuadLayer::new(ctx),
+            frame: QuadLayer::new(ctx),
+            ligths: LigthLayer::new(ctx),
         };
+        let game_camera = Camera::new(ctx);
+        let frame_camera = Camera::new(ctx);
 
-        scene.layers.background.buffer.push(QuadInstance::new(
-            [0., 0.],
-            3.,
+        layers.background.buffer.push(QuadInstance::new(
+            Vec2::zero(),
+            4.,
             TextureAtlas::view_triangles(),
         ));
 
-        scene.layers.ligths.add_ligth(
+        let ligth = layers.ligths.add_ligth(
             ctx,
-            &LigthUniform {
-                pos: [0., 0., 0.2],
+            LigthUniform {
+                pos: Vec2::zero(),
+                z_index: 0.2,
                 ligth_color: 0x3FFFFFFF,
             },
         );
 
-        scene
+        let block = BlockSq2::new(&mut layers.blocks, &mut layers.ligths);
+
+        Self {
+            layers,
+            game_camera,
+            frame_camera,
+
+            block,
+            ligth,
+        }
     }
 
     pub fn resize(&mut self, size: Vec2) {
@@ -76,7 +88,7 @@ impl Scene {
         self.layers.players.draw(pass);
 
         shaders.quad.bind(pass);
-        self.layers.boxes.draw(pass);
+        self.layers.blocks.draw(pass);
         self.layers.top_particles.draw(pass);
 
         self.frame_camera.bind(pass);
@@ -89,19 +101,26 @@ impl MouseEventHandler for Scene {
         let game_mouse = mouse.transform(&self.game_camera);
         let pos = game_mouse.pos;
 
-        self.layers.boxes.buffer.clear();
-        self.layers.boxes.buffer.push(QuadInstance::new(
-            [pos.x, pos.y],
-            0.3,
-            TextureAtlas::view_block_sq3(),
-        ));
+        self.block
+            .set_pos(&mut self.layers.blocks, &mut self.layers.ligths, pos);
 
-        self.layers.ligths.clear_shadows();
+        let ligth = self.layers.ligths.get_ligth_mut(self.ligth);
+        ligth.data.pos = -pos;
+        ligth.needs_update = true;
 
-        for wind in shapes::BLOCK_SQ3.windows(2) {
-            let a = [pos.x + wind[0][0] * 0.3, pos.y + wind[0][1] * 0.3];
-            let b = [pos.x + wind[1][0] * 0.3, pos.y + wind[1][1] * 0.3];
-            self.layers.ligths.add_shadow(ShadowInstance { a, b });
-        }
+        // self.layers.boxes.buffer.clear();
+        // self.layers.boxes.buffer.push(QuadInstance::new(
+        //     [pos.x, pos.y],
+        //     0.3,
+        //     TextureAtlas::view_block_sq3(),
+        // ));
+
+        // self.layers.ligths.clear_shadows();
+
+        // for wind in shapes::BLOCK_SQ3.windows(2) {
+        //     let a = [pos.x + wind[0][0] * 0.3, pos.y + wind[0][1] * 0.3];
+        //     let b = [pos.x + wind[1][0] * 0.3, pos.y + wind[1][1] * 0.3];
+        //     self.layers.ligths.add_shadow(ShadowInstance { a, b });
+        // }
     }
 }

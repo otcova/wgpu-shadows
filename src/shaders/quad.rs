@@ -1,4 +1,5 @@
 use crate::ligth_pipeline::{LigthRenderPass, LigthTextures};
+use crate::math::Vec2;
 use crate::shaders::{Shader, ShaderDescriptor};
 use crate::texture_atlas::{TextureAtlas, TextureAtlasView};
 use crate::uniform::Uniform;
@@ -12,13 +13,13 @@ pub struct QuadShader {
 }
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
+#[derive(Copy, Clone, Debug, bytemuck::NoUninit)]
 pub struct QuadInstance {
-    pub pos: [f32; 2],
-    pub size: [f32; 2],
+    pub pos: Vec2,
+    pub size: Vec2,
     pub angle: f32,
-    pub tex_pos: [f32; 2],
-    pub tex_size: [f32; 2],
+    pub tex_pos: Vec2,
+    pub tex_size: Vec2,
 }
 
 impl QuadInstance {
@@ -38,11 +39,11 @@ impl QuadInstance {
         }
     }
 
-    pub fn new(pos: [f32; 2], width: f32, texture: TextureAtlasView) -> Self {
-        let ratio = texture.pixel_size[1] as f32 / texture.pixel_size[1] as f32;
+    pub fn new(pos: Vec2, width: f32, texture: TextureAtlasView) -> Self {
+        let ratio = texture.pixel_size[1] as f32 / texture.pixel_size[0] as f32;
         Self {
             pos,
-            size: [width, width * ratio],
+            size: Vec2::new(width, width * ratio),
             angle: 0.,
             tex_pos: texture.pos,
             tex_size: texture.size,

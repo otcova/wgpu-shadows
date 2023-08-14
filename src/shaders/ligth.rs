@@ -1,4 +1,5 @@
 use crate::ligth_pipeline::{LigthRenderPass, LigthTextures};
+use crate::math::Vec2;
 use crate::shaders::*;
 use crate::uniform::*;
 use crate::WgpuContext;
@@ -10,8 +11,8 @@ pub struct LigthShader {
 #[repr(C)]
 #[derive(Default, Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct ShadowInstance {
-    pub a: [f32; 2],
-    pub b: [f32; 2],
+    pub a: Vec2,
+    pub b: Vec2,
 }
 
 impl ShadowInstance {
@@ -32,7 +33,8 @@ impl ShadowInstance {
 #[repr(C)]
 #[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct LigthUniform {
-    pub pos: [f32; 3],
+    pub pos: Vec2,
+    pub z_index: f32,
     pub ligth_color: u32,
 }
 

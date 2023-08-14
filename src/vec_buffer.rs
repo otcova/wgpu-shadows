@@ -23,31 +23,31 @@ impl<T: bytemuck::NoUninit> VecBuffer<T> {
         }
     }
 
-    pub fn get_mut(&mut self, idx: usize) -> &mut T {
+    pub fn get_mut(&mut self, index: usize) -> &mut T {
         if let Some(range) = &mut self.update_range {
-            range.start = range.start.min(idx);
-            range.end = range.end.max(idx + 1);
+            range.start = range.start.min(index);
+            range.end = range.end.max(index + 1);
         } else {
-            self.update_range = Some(idx..idx + 1);
+            self.update_range = Some(index..index + 1);
         }
 
-        &mut self.data[idx]
+        &mut self.data[index]
     }
 
-    pub fn push(&mut self, quad: T) {
-        self.data.push(quad);
+    /// Return the index of the item
+    pub fn push(&mut self, item: T) -> usize {
+        self.data.push(item);
 
         let end = self.data.len();
+        let index = end - 1;
+
         if let Some(range) = &mut self.update_range {
             range.end = end;
         } else {
-            self.update_range = Some(end - 1..end);
+            self.update_range = Some(index..end);
         }
-    }
 
-    pub fn clear(&mut self) {
-        self.data.clear();
-        self.update_range = Some(0..1);
+        index
     }
 
     pub fn len(&self) -> usize {

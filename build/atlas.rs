@@ -111,8 +111,8 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
                 #[allow(dead_code)]
                 pub fn view_{name}() -> TextureAtlasView {{
                     TextureAtlasView {{
-                        pos: [{x}f32, {y}f32],
-                        size: [{w}f32, {h}f32],
+                        pos: Vec2::new({x}f32, {y}f32),
+                        size: Vec2::new({w}f32, {h}f32),
                         pixel_size: [{pixel_w}u32, {pixel_h}u32],
                     }}
                 }}
@@ -150,7 +150,7 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
         
         use crate::error::ErrResult;
         use crate::texture::Texture;
-        use crate::WgpuContext;
+        use crate::{{Vec2, WgpuContext}};
         
         pub struct TextureAtlas {{
             pub diffuse_textures: [Texture; {pages_count}],
@@ -159,8 +159,8 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
 
         #[derive(Copy, Clone)]
         pub struct TextureAtlasView {{
-            pub pos: [f32; 2],
-            pub size: [f32; 2],
+            pub pos: Vec2,
+            pub size: Vec2,
             pub pixel_size: [u32; 2],
         }}
 
