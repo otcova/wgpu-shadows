@@ -2,13 +2,14 @@
 
 mod camera;
 mod error;
+mod font;
 mod layers;
 mod ligth_pipeline;
 mod math;
 mod mouse;
 mod objects;
-mod scene;
 mod scene_manager;
+mod scenes;
 mod shaders;
 mod shapes;
 mod texture_atlas;
@@ -179,7 +180,7 @@ pub async fn run() {
     let window = WindowBuilder::new()
         .with_title(":)")
         .with_inner_size(LogicalSize {
-            width: 1280,
+            width: 720, //1280,
             height: 720,
         })
         .build(&event_loop)

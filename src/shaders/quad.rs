@@ -39,10 +39,9 @@ impl QuadInstance {
     }
 
     pub fn new(pos: Vec2, width: f32, texture: TextureAtlasView) -> Self {
-        let ratio = texture.pixel_size[1] as f32 / texture.pixel_size[0] as f32;
         Self {
             pos,
-            size: Vec2::new(width, width * ratio),
+            size: texture.aspect_ratio_x1() * width,
             angle: 0.,
             tex_pos: texture.pos,
             tex_size: texture.size,

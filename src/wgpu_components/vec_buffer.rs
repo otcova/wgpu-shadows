@@ -23,6 +23,10 @@ impl<T: bytemuck::NoUninit> VecBuffer<T> {
         }
     }
 
+    pub fn get_ref(&self, index: usize) -> &T {
+        &self.data[index]
+    }
+
     pub fn get_mut(&mut self, index: usize) -> &mut T {
         if let Some(range) = &mut self.update_range {
             range.start = range.start.min(index);

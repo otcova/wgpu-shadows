@@ -1,5 +1,3 @@
-use std::ops::{Add, Div, Mul, Neg, Sub};
-
 #[repr(C)]
 #[derive(Clone, Copy, PartialEq, Debug, Default, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct Vec2 {
@@ -18,7 +16,7 @@ impl Vec2 {
     }
 }
 
-impl Neg for Vec2 {
+impl std::ops::Neg for Vec2 {
     type Output = Vec2;
     #[inline]
     fn neg(self) -> Self {
@@ -29,57 +27,57 @@ impl Neg for Vec2 {
     }
 }
 
-impl Add<Vec2> for Vec2 {
-    type Output = Vec2;
-    #[inline]
-    fn add(self, rhs: Vec2) -> Self::Output {
-        Self {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
+macro_rules! impl_op {
+    ($Trait:ident, $fn:ident, $symbol:tt) => {
+        impl std::ops::$Trait<Vec2> for Vec2 {
+            type Output = Vec2;
+            #[inline]
+            fn $fn(self, rhs: Vec2) -> Self::Output {
+                Self {
+                    x: self.x $symbol rhs.x,
+                    y: self.y $symbol rhs.y,
+                }
+            }
         }
-    }
+
+        impl std::ops::$Trait<f32> for Vec2 {
+            type Output = Vec2;
+            #[inline]
+            fn $fn(self, rhs: f32) -> Self::Output {
+                Self {
+                    x: self.x $symbol rhs,
+                    y: self.y $symbol rhs,
+                }
+            }
+        }
+    };
 }
 
-impl Sub<Vec2> for Vec2 {
-    type Output = Vec2;
-    #[inline]
-    fn sub(self, rhs: Vec2) -> Self::Output {
-        Self {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
+impl_op!(Add, add, +);
+impl_op!(Sub, sub, -);
+impl_op!(Mul, mul, *);
+impl_op!(Div, div, /);
+
+macro_rules! impl_op_assign {
+    ($Trait:ident, $fn:ident, $symbol:tt) => {
+        impl std::ops::$Trait<Vec2> for Vec2 {
+            #[inline]
+            fn $fn(&mut self, rhs: Vec2) {
+                self.x $symbol rhs.x;
+                self.y $symbol rhs.y;
+            }
         }
-    }
+        impl std::ops::$Trait<f32> for Vec2 {
+            #[inline]
+            fn $fn(&mut self, rhs: f32) {
+                self.x $symbol rhs;
+                self.y $symbol rhs;
+            }
+        }
+    };
 }
 
-impl Mul<Vec2> for Vec2 {
-    type Output = Vec2;
-    #[inline]
-    fn mul(self, rhs: Vec2) -> Self::Output {
-        Self {
-            x: self.x * rhs.x,
-            y: self.y * rhs.y,
-        }
-    }
-}
-
-impl Mul<f32> for Vec2 {
-    type Output = Vec2;
-    #[inline]
-    fn mul(self, rhs: f32) -> Self::Output {
-        Self {
-            x: self.x * rhs,
-            y: self.y * rhs,
-        }
-    }
-}
-
-impl Div<Vec2> for Vec2 {
-    type Output = Vec2;
-    #[inline]
-    fn div(self, rhs: Vec2) -> Self::Output {
-        Self {
-            x: self.x / rhs.x,
-            y: self.y / rhs.y,
-        }
-    }
-}
+impl_op_assign!(AddAssign, add_assign, +=);
+impl_op_assign!(SubAssign, sub_assign, -=);
+impl_op_assign!(MulAssign, mul_assign, *=);
+impl_op_assign!(DivAssign, div_assign, /=);

@@ -3,7 +3,7 @@ use winit::event::WindowEvent;
 use crate::ligth_pipeline::LigthPipeline;
 use crate::math::Vec2;
 use crate::mouse::Mouse;
-use crate::scene::Scene;
+use crate::scenes::*;
 use crate::shaders::Shaders;
 use crate::ErrResult;
 use crate::WgpuContext;

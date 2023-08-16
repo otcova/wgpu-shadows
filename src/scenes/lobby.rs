@@ -1,5 +1,6 @@
+use super::*;
 use crate::camera::*;
-use crate::layers::*;
+use crate::font::*;
 use crate::ligth_pipeline::*;
 use crate::math::*;
 use crate::mouse::*;
@@ -8,16 +9,6 @@ use crate::shaders::*;
 use crate::texture_atlas::*;
 use crate::wgpu_components::*;
 
-struct SceneLayers {
-    background: QuadLayer,
-    bottom_particles: QuadLayer,
-    players: QuadLayer,
-    blocks: QuadLayer,
-    top_particles: QuadLayer,
-    frame: QuadLayer,
-    ligths: LigthLayer,
-}
-
 pub struct Scene {
     layers: SceneLayers,
     game_camera: Camera,
@@ -25,6 +16,7 @@ pub struct Scene {
 
     block: BlockSq2,
     ligth: usize,
+    button: TextButton,
 }
 
 impl Scene {
@@ -36,6 +28,7 @@ impl Scene {
             blocks: QuadLayer::new(ctx),
             top_particles: QuadLayer::new(ctx),
             frame: QuadLayer::new(ctx),
+            ui: QuadLayer::new(ctx),
             ligths: LigthLayer::new(ctx),
         };
         let game_camera = Camera::new(ctx);
@@ -49,10 +42,23 @@ impl Scene {
 
         let ligth = layers
             .ligths
-            .add_ligth(ctx, Vec2::zero(), LigthUniform::color(50, 50, 50));
+            .add_ligth(ctx, Vec2::zero(), LigthUniform::color(130, 130, 130));
 
         BlockSq3::new(&mut layers.blocks, &mut layers.ligths, Vec2::new(0., 0.4));
         let block = BlockSq2::new(&mut layers.blocks, &mut layers.ligths, Vec2::zero());
+
+        let font = Font::parse(
+            include_str!("../../fonts/Tektur-Regular.fnt"),
+            TextureAtlas::view_tektur_regular(),
+        );
+
+        let button = TextButton::new(TextButtonDescriptor {
+            layer: &mut layers.ui,
+            font: &font,
+            text: "Hey!",
+            pos: Vec2::new(-0.5, -0.2),
+            size: 0.1,
+        });
 
         Self {
             layers,
@@ -61,6 +67,7 @@ impl Scene {
 
             block,
             ligth,
+            button,
         }
     }
 
@@ -90,6 +97,7 @@ impl Scene {
 
         self.frame_camera.bind(pass);
         self.layers.frame.draw(pass);
+        self.layers.ui.draw(pass);
     }
 }
 
@@ -97,6 +105,8 @@ impl MouseEventHandler for Scene {
     fn moved(&mut self, mouse: &Mouse) {
         let game_mouse = mouse.transform(&self.game_camera);
         let pos = game_mouse.pos;
+
+        self.button.mouse_moved(pos, &mut self.layers.ui);
 
         self.block
             .set_pos(&mut self.layers.blocks, &mut self.layers.ligths, pos);

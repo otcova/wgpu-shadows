@@ -8,7 +8,8 @@ pub struct Mouse {
 }
 
 pub trait MouseEventHandler {
-    fn moved(&mut self, _mouse: &Mouse) {}
+    #[allow(unused_variables)]
+    fn moved(&mut self, mouse: &Mouse) {}
     // fn down(&mut self, mouse: &Mouse);
     // fn up(&mut self, mouse: &Mouse);
 }

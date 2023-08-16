@@ -75,11 +75,11 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     
 
     let l = vec4(ligth, grayscale(ligth));
-    let w1 = max(vec4(0.), 4. * (l - l * l));
-    let w2 = max(vec4(0.), 2. * l - 1.);
+    let w1 = max(vec4(0.), 1. - l);//max(vec4(0.), 4. * (l - l * l));
+    let w2 = l;//max(vec4(0.), 2. * l - 1.);
     
     let color = textureSample(atlas_tex, tex_sampler, in.tex_coords);
-    let dark_color = vec4(vec3(grayscale(color.rgb)), color.a);
+    let dark_color = vec4(vec3(grayscale(color.rgb)) * 0.3, color.a);
     
     // let dark_color = textureSample(dark_atlas_tex, tex_sampler, in.tex_coords);
 

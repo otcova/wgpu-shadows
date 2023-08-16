@@ -105,11 +105,11 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
             let x = (frame.frame.x as f32) / page_w + page_offset;
             let y = (frame.frame.y as f32) / page_h + page_offset;
 
-            let pixel_w = frame.frame.w;
-            let pixel_h = frame.frame.h;
+            let pixel_w = frame.frame.w as f32;
+            let pixel_h = frame.frame.h as f32;
 
-            let w = (pixel_w as f32) / page_w;
-            let h = (pixel_h as f32) / page_h;
+            let w = pixel_w / page_w;
+            let h = pixel_h / page_h;
 
             texture_views += &formatdoc! {"
                 #[allow(dead_code)]
@@ -117,10 +117,10 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
                     TextureAtlasView {{
                         pos: Vec2::new({x}f32, {y}f32),
                         size: Vec2::new({w}f32, {h}f32),
-                        pixel_size: [{pixel_w}u32, {pixel_h}u32],
+                        ratio: {}f32,
                     }}
                 }}
-            /"};
+            /", pixel_w / pixel_h};
             texture_views.pop();
         }
 
@@ -165,7 +165,7 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
         pub struct TextureAtlasView {{
             pub pos: Vec2,
             pub size: Vec2,
-            pub pixel_size: [u32; 2],
+            ratio: f32,
         }}
 
         impl TextureAtlas {{
@@ -181,6 +181,13 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
             }}
         
         {texture_views}
+        }}
+
+        impl TextureAtlasView {{
+            /// Returns: Vec2 {{ x: ratio, y: 1.0 }}
+            pub fn aspect_ratio_x1(&self) -> Vec2 {{
+                Vec2::new(self.ratio, 1.)
+            }}
         }}
     "};
 
