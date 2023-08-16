@@ -1,6 +1,6 @@
 use super::shadow_from_shape;
-use crate::layers::*;
 use crate::math::*;
+use crate::scenes::*;
 use crate::shaders::*;
 use crate::shapes::*;
 use crate::texture_atlas::*;
@@ -13,11 +13,12 @@ macro_rules! block_object {
         }
 
         impl $Struct {
-            pub fn new(layer: &mut QuadLayer, ligth_layer: &mut LigthLayer, pos: Vec2) -> Self {
+            pub fn new(layers: &mut GameLayers, pos: Vec2) -> Self {
                 let size = 0.3;
 
                 let quad_id =
-                    layer
+                    layers
+                        .blocks
                         .buffer
                         .push(QuadInstance::new(pos, size, TextureAtlas::$image()));
 
@@ -26,17 +27,17 @@ macro_rules! block_object {
                 for (i, mut shadow) in shadow_from_shape(&$SHAPE).enumerate() {
                     shadow.a = shadow.a * size + pos;
                     shadow.b = shadow.b * size + pos;
-                    shadow_id[i] = ligth_layer.add_shadow(shadow);
+                    shadow_id[i] = layers.ligths.add_shadow(shadow);
                 }
 
                 Self { quad_id, shadow_id }
             }
 
             #[allow(unused)]
-            pub fn set_pos(&self, layer: &mut QuadLayer, ligth_layer: &mut LigthLayer, pos: Vec2) {
-                let quad = layer.buffer.get_mut(self.quad_id);
+            pub fn set_pos(&self, layers: &mut GameLayers, pos: Vec2) {
+                let quad = layers.blocks.buffer.get_mut(self.quad_id);
                 for shadow_id in self.shadow_id {
-                    let shadow = ligth_layer.get_shadow_mut(shadow_id);
+                    let shadow = layers.ligths.get_shadow_mut(shadow_id);
                     shadow.a = shadow.a - quad.pos + pos;
                     shadow.b = shadow.b - quad.pos + pos;
                 }
