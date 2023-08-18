@@ -35,11 +35,8 @@ impl Camera {
         });
     }
 
-    pub fn update_buffers(&mut self, ctx: &WgpuContext) {
-        self.uniform.update_buffers(ctx);
-    }
-
-    pub fn bind<'a>(&'a self, pass: &mut LigthRenderPass<'a>) {
+    pub fn bind<'a>(&'a mut self, pass: &mut LigthRenderPass<'a>) {
+        self.uniform.update_buffers(pass.context);
         self.uniform.bind(1, &mut pass.normal);
         self.uniform.bind(1, &mut pass.ligth);
         self.uniform.bind(1, &mut pass.diffuse);

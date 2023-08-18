@@ -110,14 +110,6 @@ impl TextureAtlas {
         }
     }
     #[allow(dead_code)]
-    pub fn view_text_button_hover() -> TextureAtlasView {
-        TextureAtlasView {
-            pos: Vec2::new(0.77348065f32, 0f32),
-            size: Vec2::new(0.18342541f32, 0.04500592f32),
-            ratio: 5.8245616f32,
-        }
-    }
-    #[allow(dead_code)]
     pub fn view_triangles() -> TextureAtlasView {
         TextureAtlasView {
             pos: Vec2::new(0.43425414f32, 0.19147256f32),

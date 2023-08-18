@@ -7,9 +7,12 @@ pub struct Mouse {
     screen_size: Vec2,
 }
 
-pub trait MouseEventHandler {
+pub trait MouseEventHandler<A> {
     #[allow(unused_variables)]
-    fn moved(&mut self, mouse: &Mouse) {}
+    fn update(&mut self, mouse: &Mouse, args: &mut A) {}
+
+    #[allow(unused_variables)]
+    fn moved(&mut self, mouse: &Mouse, args: &mut A) {}
     // fn down(&mut self, mouse: &Mouse);
     // fn up(&mut self, mouse: &Mouse);
 }
@@ -35,9 +38,11 @@ impl Mouse {
         }
     }
 
-    pub fn propagate_events<H: MouseEventHandler>(&self, handler: &mut H) {
+    pub fn propagate_events<A, H: MouseEventHandler<A>>(&self, handler: &mut H, args: &mut A) {
+        handler.update(self, args);
+
         if self.pos != self.past_pos {
-            handler.moved(self);
+            handler.moved(self, args);
         }
     }
 

@@ -55,6 +55,7 @@ impl Font {
                 let quad = QuadInstance {
                     pos: pos + glyph.pos * scale + quad_size * Vec2::new(0.5, -0.5),
                     size: quad_size,
+                    color: 0xFFFFFFFF,
                     angle: 0.,
                     tex_pos: glyph.tex_pos,
                     tex_size: glyph.tex_size,

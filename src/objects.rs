@@ -1,8 +1,10 @@
 mod block;
 mod text_button;
+mod text_input;
 
 pub use block::*;
 pub use text_button::*;
+pub use text_input::*;
 
 use crate::math::*;
 use crate::shaders::*;

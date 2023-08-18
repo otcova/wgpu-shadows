@@ -8,17 +8,19 @@ var<uniform> camera: CameraUniform;
 
 struct VertexInput {
     @builtin(vertex_index) vertex_index: u32,
-    @location(0) pos: vec2<f32>,
-    @location(1) size: vec2<f32>,
-    @location(2) angle: f32,
-    @location(3) tex_pos: vec2<f32>,
-    @location(4) tex_size: vec2<f32>,
+    @location(0) color: vec4<f32>,
+    @location(1) angle: f32,
+    @location(2) pos: vec2<f32>,
+    @location(3) size: vec2<f32>,
+    @location(4) tex_pos: vec2<f32>,
+    @location(5) tex_size: vec2<f32>,
 };
 
 struct VertexOutput {
     @builtin(position) clip_position: vec4<f32>,
     @location(0) tex_coords: vec2<f32>,
     @location(1) pos: vec2<f32>,
+    @location(2) color: vec4<f32>,
 };
 
 fn quad_mesh(i: u32) -> vec2<f32> {
@@ -45,6 +47,7 @@ fn vs_main(
     
     out.clip_position = vec4<f32>(out.pos, 0., 1.);
     out.pos = out.pos * vec2(0.5, -0.5) + 0.5;
+    out.color = model.color;
     
     return out;
 }

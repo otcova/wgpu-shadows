@@ -19,16 +19,21 @@ pub struct TextButtonDescriptor<'a> {
 }
 
 impl TextButton {
-    pub fn new(desc: TextButtonDescriptor) -> Self {
-        const MARGIN: f32 = 0.04;
+    const COLOR: u32 = 0x41000AFF;
+    const HOVER_COLOR: u32 = 0x752A00FF;
 
-        let view = TextureAtlas::view_text_button();
+    pub fn new(desc: TextButtonDescriptor) -> Self {
+        const MARGIN: f32 = 1.3;
+
+        let tex_view = TextureAtlas::view_text_button();
+
         let back_quad = desc.layer.buffer.push(QuadInstance {
             pos: desc.pos,
-            size: view.aspect_ratio_x1() * desc.size + MARGIN,
+            size: tex_view.aspect_ratio_x1() * desc.size * MARGIN,
+            color: Self::COLOR,
             angle: 0.,
-            tex_pos: view.pos,
-            tex_size: view.size,
+            tex_pos: tex_view.pos,
+            tex_size: tex_view.size,
         });
 
         let text_width = desc.font.width(desc.text) * desc.size;
@@ -38,8 +43,8 @@ impl TextButton {
             .write(desc.text, desc.size)
             .map(|mut quad| {
                 quad.pos += desc.pos;
-                quad.pos.x -= text_width * 0.5; // Center Horizontally
-                quad.pos.y -= desc.size * 0.37; // Center Vertically
+                quad.pos.x -= text_width * 0.5;
+                quad.pos.y -= desc.size * 0.37;
                 desc.layer.buffer.push(quad)
             })
             .collect();
@@ -57,19 +62,21 @@ impl TextButton {
             || pos.y < layer.pos.y - half_size.y
             || layer.pos.y + half_size.y < pos.y)
     }
+}
 
-    pub fn mouse_moved(&mut self, pos: Vec2, layer: &mut QuadLayer) {
+impl MouseEventHandler<QuadLayer> for TextButton {
+    fn moved(&mut self, mouse: &Mouse, layer: &mut QuadLayer) {
         let quad = layer.buffer.get_ref(self.back_quad);
 
-        let view = if self.hitbox_check(pos, quad) {
-            TextureAtlas::view_text_button_hover()
+        let color = if self.hitbox_check(mouse.pos, quad) {
+            Self::HOVER_COLOR
         } else {
-            TextureAtlas::view_text_button()
+            Self::COLOR
         };
 
-        if quad.tex_pos.x != view.pos.x {
+        if quad.color != color {
             let quad = layer.buffer.get_mut(self.back_quad);
-            quad.tex_pos = view.pos;
+            quad.color = color;
         }
     }
 }

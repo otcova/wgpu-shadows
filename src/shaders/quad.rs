@@ -14,20 +14,22 @@ pub struct QuadShader {
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::NoUninit)]
 pub struct QuadInstance {
+    pub color: u32,
+    pub angle: f32,
     pub pos: Vec2,
     pub size: Vec2,
-    pub angle: f32,
     pub tex_pos: Vec2,
     pub tex_size: Vec2,
 }
 
 impl QuadInstance {
-    const ATTRIBS: [wgpu::VertexAttribute; 5] = wgpu::vertex_attr_array![
-        0 => Float32x2, // pos
-        1 => Float32x2, // size
-        2 => Float32,   // angle
-        3 => Float32x2, // tex_pos
-        4 => Float32x2, // tex_size
+    const ATTRIBS: [wgpu::VertexAttribute; 6] = wgpu::vertex_attr_array![
+        0 => Unorm8x4,  // color
+        1 => Float32,   // angle
+        2 => Float32x2, // pos
+        3 => Float32x2, // size
+        4 => Float32x2, // tex_pos
+        5 => Float32x2, // tex_size
     ];
 
     pub fn desc() -> wgpu::VertexBufferLayout<'static> {
@@ -38,13 +40,25 @@ impl QuadInstance {
         }
     }
 
-    pub fn new(pos: Vec2, width: f32, texture: TextureAtlasView) -> Self {
+    pub fn new_tex(pos: Vec2, width: f32, texture: TextureAtlasView) -> Self {
         Self {
             pos,
             size: texture.aspect_ratio_x1() * width,
             angle: 0.,
+            color: 0,
             tex_pos: texture.pos,
             tex_size: texture.size,
+        }
+    }
+
+    pub fn new_color(pos: Vec2, size: Vec2, color: u32) -> Self {
+        Self {
+            pos,
+            size,
+            angle: 0.,
+            color,
+            tex_pos: Vec2::new(-1., 0.),
+            tex_size: Vec2::zero(),
         }
     }
 }

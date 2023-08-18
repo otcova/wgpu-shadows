@@ -8,11 +8,12 @@ var<uniform> camera: CameraUniform;
 
 struct VertexInput {
     @builtin(vertex_index) vertex_index: u32,
-    @location(0) pos: vec2<f32>,
-    @location(1) size: vec2<f32>,
-    @location(2) angle: f32,
-    @location(3) tex_pos: vec2<f32>,
-    @location(4) tex_size: vec2<f32>,
+    @location(0) color: vec4<f32>,
+    @location(1) angle: f32,
+    @location(2) pos: vec2<f32>,
+    @location(3) size: vec2<f32>,
+    @location(4) tex_pos: vec2<f32>,
+    @location(5) tex_size: vec2<f32>,
 };
 
 struct VertexOutput {

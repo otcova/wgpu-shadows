@@ -16,11 +16,11 @@ macro_rules! block_object {
             pub fn new(layers: &mut GameLayers, pos: Vec2) -> Self {
                 let size = 0.3;
 
-                let quad_id =
-                    layers
-                        .blocks
-                        .buffer
-                        .push(QuadInstance::new(pos, size, TextureAtlas::$image()));
+                let quad_id = layers.blocks.buffer.push(QuadInstance::new_tex(
+                    pos,
+                    size,
+                    TextureAtlas::$image(),
+                ));
 
                 let mut shadow_id = [0; $SHAPE.len()];
 

@@ -1,5 +1,6 @@
 #![feature(float_next_up_down)]
 
+mod assets;
 mod camera;
 mod error;
 mod font;
