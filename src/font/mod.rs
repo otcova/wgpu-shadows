@@ -1,6 +1,5 @@
-mod parser;
-
-pub use parser::*;
+mod loaded_fonts;
+pub use loaded_fonts::*;
 
 use crate::math::*;
 use crate::shaders::*;
@@ -8,7 +7,7 @@ use crate::shaders::*;
 pub struct Font {
     tex_size: Vec2,
     line_height: f32,
-    glyphs: Vec<Option<Glyph>>,
+    glyphs: &'static [Option<Glyph>],
     glyphs_start: usize,
 }
 

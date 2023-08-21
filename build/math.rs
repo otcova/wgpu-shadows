@@ -1,5 +1,7 @@
+use std::fmt::Display;
+
 #[repr(C)]
-#[derive(Clone, Copy, PartialEq, Debug, Default, bytemuck::Pod, bytemuck::Zeroable)]
+#[derive(Clone, Copy, PartialEq, Debug, Default)]
 pub struct Vec2 {
     pub x: f32,
     pub y: f32,
@@ -7,12 +9,26 @@ pub struct Vec2 {
 
 impl Vec2 {
     #[inline]
-    pub const fn new(x: f32, y: f32) -> Self {
+    pub fn new(x: f32, y: f32) -> Self {
         Self { x, y }
     }
     #[inline]
-    pub const fn zero() -> Self {
+    pub fn zero() -> Self {
         Self { x: 0., y: 0. }
+    }
+}
+
+impl Display for Vec2 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Vec2::new({}", self.x)?;
+        if self.x.fract() == 0. {
+            write!(f, ".")?;
+        }
+        write!(f, ", {}", self.y)?;
+        if self.y.fract() == 0. {
+            write!(f, ".")?;
+        }
+        write!(f, ")")
     }
 }
 

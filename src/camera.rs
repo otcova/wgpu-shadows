@@ -1,6 +1,6 @@
+use crate::input::*;
 use crate::ligth_pipeline::*;
 use crate::math::*;
-use crate::mouse::*;
 use crate::wgpu_components::*;
 
 pub struct Camera {

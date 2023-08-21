@@ -513,24 +513,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "graphy"
-version = "0.1.0"
-dependencies = [
- "bytemuck",
- "env_logger",
- "image",
- "indoc",
- "log",
- "smaa",
- "svg",
- "texture_packer",
- "tokio",
- "webp",
- "wgpu",
- "winit",
-]
-
-[[package]]
 name = "hashbrown"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1754,6 +1736,24 @@ dependencies = [
  "web-sys",
  "wgpu-types",
  "winapi",
+]
+
+[[package]]
+name = "wgpu-shadows"
+version = "0.1.0"
+dependencies = [
+ "bytemuck",
+ "env_logger",
+ "image",
+ "indoc",
+ "log",
+ "smaa",
+ "svg",
+ "texture_packer",
+ "tokio",
+ "webp",
+ "wgpu",
+ "winit",
 ]
 
 [[package]]

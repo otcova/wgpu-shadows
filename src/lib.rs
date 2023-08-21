@@ -1,13 +1,12 @@
-#![feature(float_next_up_down)]
+#![feature(const_for, float_next_up_down)]
 
-mod assets;
 mod camera;
 mod error;
 mod font;
+mod input;
 mod layers;
 mod ligth_pipeline;
 mod math;
-mod mouse;
 mod objects;
 mod scene_manager;
 mod scenes;

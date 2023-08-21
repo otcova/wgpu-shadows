@@ -1,20 +1,10 @@
-use crate::math::*;
-use winit::event::WindowEvent;
+use super::*;
 
+#[derive(Clone, Copy)]
 pub struct Mouse {
     pub pos: Vec2,
     pub past_pos: Vec2,
     screen_size: Vec2,
-}
-
-pub trait MouseEventHandler<A> {
-    #[allow(unused_variables)]
-    fn update(&mut self, mouse: &Mouse, args: &mut A) {}
-
-    #[allow(unused_variables)]
-    fn moved(&mut self, mouse: &Mouse, args: &mut A) {}
-    // fn down(&mut self, mouse: &Mouse);
-    // fn up(&mut self, mouse: &Mouse);
 }
 
 pub trait MouseTransform {
@@ -38,11 +28,12 @@ impl Mouse {
         }
     }
 
-    pub fn propagate_events<A, H: MouseEventHandler<A>>(&self, handler: &mut H, args: &mut A) {
-        handler.update(self, args);
-
+    pub fn propagate_events<A, H>(&self, handler: &mut H, args: &mut A)
+    where
+        H: InputEventHandler<A>,
+    {
         if self.pos != self.past_pos {
-            handler.moved(self, args);
+            handler.mouse_moved(self, args);
         }
     }
 
@@ -72,5 +63,11 @@ impl Mouse {
             }
             _ => false,
         }
+    }
+}
+
+impl MouseTransform for () {
+    fn transform(&self, pos: Vec2) -> Vec2 {
+        pos
     }
 }

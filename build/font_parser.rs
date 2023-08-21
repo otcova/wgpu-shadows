@@ -1,8 +1,24 @@
+use super::atlas::*;
 use super::*;
-use crate::texture_atlas::*;
+
+pub struct Font {
+    pub tex_size: Vec2,
+    pub line_height: f32,
+    pub glyphs: Vec<Option<Glyph>>,
+    pub glyphs_start: usize,
+}
+
+#[derive(Default, Copy, Clone)]
+pub struct Glyph {
+    pub tex_pos: Vec2,
+    pub tex_size: Vec2,
+    pub pos: Vec2,
+    pub size: Vec2,
+    pub advance: f32,
+}
 
 impl Font {
-    pub fn parse(fnt_file: &str, texture_view: TextureAtlasView) -> Self {
+    pub fn parse(fnt_file: &str, texture_view: AtlasView) -> Self {
         let mut font = Font {
             tex_size: Vec2::zero(),
             line_height: 0.,
@@ -20,8 +36,8 @@ impl Font {
         font.glyphs.shrink_to_fit();
 
         if font.glyphs.len() > 300 {
-            log::warn!(
-                "!!! The font has a lot of glyphs {} !!!!!!!!!",
+            super::log!(
+                "!!!!!!!!! The font has a lot of glyphs {} !!!!!!!!!",
                 font.glyphs.len()
             );
         }
@@ -32,7 +48,7 @@ impl Font {
     }
 
     /// Converts all pixel coordinates to texture coordinates
-    fn normalize_pixels(&mut self, texture_view: TextureAtlasView) {
+    fn normalize_pixels(&mut self, texture_view: AtlasView) {
         for glyph in &mut self.glyphs {
             if let Some(glyph) = glyph {
                 glyph.size = glyph.tex_size;

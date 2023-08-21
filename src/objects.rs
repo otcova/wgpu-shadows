@@ -9,6 +9,8 @@ pub use text_input::*;
 use crate::math::*;
 use crate::shaders::*;
 
+const UI_SIZE: f32 = 0.08;
+
 fn shadow_from_shape<'a>(shape: &'a [Vec2]) -> impl Iterator<Item = ShadowInstance> + 'a {
     shape
         .windows(2)

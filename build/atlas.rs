@@ -1,5 +1,7 @@
+use super::*;
 use image::{DynamicImage, EncodableLayout, ImageBuffer};
 use indoc::*;
+use std::collections::HashMap;
 use std::{ffi::OsStr, fs};
 
 use texture_packer::{
@@ -17,6 +19,17 @@ const ATLAS_CONFIG: TexturePackerConfig = TexturePackerConfig {
     texture_extrusion: 0,
     trim: true,
 };
+
+#[derive(Clone, Copy)]
+pub struct AtlasView {
+    pub pos: Vec2,
+    pub size: Vec2,
+}
+
+#[derive(Default)]
+pub struct Atlas {
+    pub images: HashMap<String, AtlasView>,
+}
 
 fn pack_images<'a>(
     diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, String>,
@@ -86,7 +99,10 @@ fn export_textures<'a>(
     }
 }
 
-fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, String>) {
+fn generate_code<'a>(
+    diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, String>,
+    atlas: &mut Atlas,
+) {
     let pages_count = diffuse_pack.get_pages().len();
 
     let mut texture_views = String::with_capacity(64 * pages_count);
@@ -110,6 +126,14 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
 
             let w = pixel_w / page_w;
             let h = pixel_h / page_h;
+
+            atlas.images.insert(
+                name.clone(),
+                AtlasView {
+                    pos: Vec2::new(x, y),
+                    size: Vec2::new(w, h),
+                },
+            );
 
             texture_views += &formatdoc! {"
                 #[allow(dead_code)]
@@ -194,14 +218,18 @@ fn generate_code<'a>(diffuse_pack: &mut MultiTexturePacker<'a, DynamicImage, Str
     fs::write("src/texture_atlas.rs", texture_atlas_src).unwrap();
 }
 
-pub fn main() {
+pub fn main() -> Atlas {
+    let mut atlas = Atlas::default();
+
     let mut diffuse = MultiTexturePacker::new_skyline(ATLAS_CONFIG);
     let mut normal = MultiTexturePacker::new_skyline(ATLAS_CONFIG);
 
     pack_images(&mut diffuse, &mut normal);
     export_textures("diffuse", &mut diffuse);
     export_textures("normal", &mut normal);
-    generate_code(&mut diffuse);
+    generate_code(&mut diffuse, &mut atlas);
 
     println!("cargo:rerun-if-changed=assets,atlas");
+
+    atlas
 }

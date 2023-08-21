@@ -1,8 +1,7 @@
+use super::*;
 use crate::font::*;
+use crate::input::*;
 use crate::layers::*;
-use crate::math::*;
-use crate::mouse::*;
-use crate::shaders::*;
 use crate::texture_atlas::*;
 
 pub struct TextButton {
@@ -12,10 +11,8 @@ pub struct TextButton {
 
 pub struct TextButtonDescriptor<'a> {
     pub layer: &'a mut QuadLayer,
-    pub font: &'a Font,
     pub text: &'a str,
     pub pos: Vec2,
-    pub size: f32,
 }
 
 impl TextButton {
@@ -29,22 +26,21 @@ impl TextButton {
 
         let back_quad = desc.layer.buffer.push(QuadInstance {
             pos: desc.pos,
-            size: tex_view.aspect_ratio_x1() * desc.size * MARGIN,
+            size: tex_view.aspect_ratio_x1() * UI_SIZE * MARGIN,
             color: Self::COLOR,
             angle: 0.,
             tex_pos: tex_view.pos,
             tex_size: tex_view.size,
         });
 
-        let text_width = desc.font.width(desc.text) * desc.size;
+        let text_width = FONT.width(desc.text) * UI_SIZE;
 
-        let text_quads = desc
-            .font
-            .write(desc.text, desc.size)
+        let text_quads = FONT
+            .write(desc.text, UI_SIZE)
             .map(|mut quad| {
                 quad.pos += desc.pos;
                 quad.pos.x -= text_width * 0.5;
-                quad.pos.y -= desc.size * 0.37;
+                quad.pos.y -= UI_SIZE * 0.37;
                 desc.layer.buffer.push(quad)
             })
             .collect();
@@ -64,8 +60,8 @@ impl TextButton {
     }
 }
 
-impl MouseEventHandler<QuadLayer> for TextButton {
-    fn moved(&mut self, mouse: &Mouse, layer: &mut QuadLayer) {
+impl InputEventHandler<QuadLayer> for TextButton {
+    fn mouse_moved(&mut self, mouse: &Mouse, layer: &mut QuadLayer) {
         let quad = layer.buffer.get_ref(self.back_quad);
 
         let color = if self.hitbox_check(mouse.pos, quad) {

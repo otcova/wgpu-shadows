@@ -1,9 +1,15 @@
 mod atlas;
+mod font_parser;
+mod fonts;
+mod math;
 mod shapes;
 
+use math::*;
+
 fn main() {
-    atlas::main();
+    let atlas = atlas::main();
     shapes::main();
+    fonts::main(&atlas);
 }
 
 #[allow(unused)]
